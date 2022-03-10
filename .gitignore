@@ -1,0 +1,6 @@
+/build/
+/gradle/
+/.idea/
+
+/.gradle/
+/src/main/resources/application.properties
