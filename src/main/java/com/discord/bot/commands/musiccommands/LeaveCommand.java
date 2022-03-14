@@ -1,7 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.audioplayer.PlayerManager;
+import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -12,8 +12,10 @@ import java.awt.*;
 
 public class LeaveCommand implements ISlashCommand {
     MusicCommandUtils utils;
+    PlayerManagerService playerManagerService;
 
-    public LeaveCommand(MusicCommandUtils utils) {
+    public LeaveCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+        this.playerManagerService = playerManagerService;
         this.utils = utils;
     }
 
@@ -22,7 +24,7 @@ public class LeaveCommand implements ISlashCommand {
         GuildVoiceState botVoiceState = event.getGuild().getSelfMember().getVoiceState();
         GuildVoiceState userVoiceState = event.getMember().getVoiceState();
         if (utils.channelControl(botVoiceState, userVoiceState)) {
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event);
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             AudioManager audioManager = event.getGuild().getAudioManager();
 
             musicManager.scheduler.player.stopTrack();

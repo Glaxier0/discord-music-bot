@@ -1,7 +1,9 @@
 package com.discord.bot;
 
+import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.CommandManager;
 import com.discord.bot.service.RestService;
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -19,27 +21,34 @@ import javax.security.auth.login.LoginException;
 
 @Configuration
 @EnableScheduling
-public class Bot {
+public class GlaxierBot {
     RestService restService;
+    PlayerManagerService playerManagerService;
 
     @Value("${discord_bot_token}")
     private String DISCORD_TOKEN;
     @Value("${test_server_id}")
     private String TEST_SERVER;
+    @Value("${__Secure-3PSID}")
+    private String PSID;
+    @Value("${__Secure-3PAPISID}")
+    private String PAPISID;
 
-    public Bot(RestService restService) {
+
+    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService) {
         this.restService = restService;
+        this.playerManagerService = playerManagerService;
     }
 
     @Bean
     public void startDiscordBot() throws LoginException {
         JDA jda = JDABuilder.createDefault(DISCORD_TOKEN)
                 .addEventListeners(
-                        new CommandManager(restService))
+                        new CommandManager(restService, playerManagerService))
                 .setActivity(Activity.listening("Type /mhelp")).build();
-
         addCommands(jda);
         System.out.println("Starting bot is done!");
+        ageRestriction();
     }
 
     private void addCommands(JDA jda) {
@@ -80,6 +89,11 @@ public class Bot {
                 Commands.slash("shuffle", "Shuffle the queue."),
                 Commands.slash("mhelp", "Help page for music commands.")
         ).queue();
+    }
+
+    private void ageRestriction() {
+        YoutubeHttpContextFilter.setPSID(PSID);
+        YoutubeHttpContextFilter.setPAPISID(PAPISID);
     }
 }
 

@@ -7,7 +7,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.awt.*;
 import java.util.concurrent.BlockingQueue;
@@ -17,13 +16,12 @@ public class TrackScheduler extends AudioEventAdapter {
     public final AudioPlayer player;
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
-    public AudioManager audioManager;
     public SlashCommandInteractionEvent event;
+    private int COUNT = 0;
 
-    public TrackScheduler(AudioPlayer player, AudioManager audioManager, SlashCommandInteractionEvent event) {
+    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
-        this.audioManager = audioManager;
         this.event = event;
     }
 
@@ -40,7 +38,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public void nextTrack() {
         this.player.startTrack(this.queue.poll(), false);
         if (player.getPlayingTrack() == null) {
-            audioManager.closeAudioConnection();
+            event.getGuild().getAudioManager().closeAudioConnection();
         }
     }
 
@@ -52,7 +50,14 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
+        if (COUNT >= 1) {
+            COUNT = 0;
+            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                    .setDescription("Track failed to start.").build()).queue();
+            return;
+        }
         player.startTrack(track.makeClone(), false);
+        COUNT++;
     }
 
     @Override

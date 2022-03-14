@@ -10,39 +10,29 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerManager {
-    private static PlayerManager INSTANCE;
-
+@Service
+public class PlayerManagerService {
     private final Map<Long, GuildMusicManager> musicManagers;
     private final AudioPlayerManager audioPlayerManager;
 
-    public PlayerManager() {
+    public PlayerManagerService() {
         this.musicManagers = new HashMap<>();
         this.audioPlayerManager = new DefaultAudioPlayerManager();
-
         AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
         AudioSourceManagers.registerLocalSource(this.audioPlayerManager);
-    }
-
-    public static PlayerManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new PlayerManager();
-        }
-
-        return INSTANCE;
     }
 
     public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
         return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager
-                    , guild.getAudioManager(), event);
+            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
 
             guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
 
@@ -52,20 +42,15 @@ public class PlayerManager {
 
     public void loadAndPlay(SlashCommandInteractionEvent event, String trackUrl) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
-
+        EmbedBuilder embedBuilder = new EmbedBuilder();
         this.audioPlayerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                musicManager.scheduler.queue(track);
-                int musicCount = musicManager.scheduler.queue.size();
-                if (musicCount > 0) {
-                    event.replyEmbeds(new EmbedBuilder().setDescription("Song added to queue: " + track.getInfo().title
-                            + "\n in queue: " + (musicCount)).setColor(Color.GREEN).build()).queue();
-                } else {
-                    event.replyEmbeds(new EmbedBuilder().setTitle("Song added to queue "
-                            + track.getInfo().title).setColor(Color.GREEN).build()).queue();
-                }
+                embedBuilder.clear();
+                event.replyEmbeds(embedBuilder.setDescription("Song added to queue: " + track.getInfo().title
+                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1)).setColor(Color.GREEN).build()).queue();
                 musicManager.scheduler.setEvent(event);
+                musicManager.scheduler.queue(track);
             }
 
             @Override

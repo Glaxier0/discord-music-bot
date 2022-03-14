@@ -1,6 +1,6 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.PlayerManager;
+import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -10,8 +10,10 @@ import java.awt.*;
 
 public class PauseCommand implements ISlashCommand {
     MusicCommandUtils utils;
+    PlayerManagerService playerManagerService;
 
-    public PauseCommand(MusicCommandUtils utils) {
+    public PauseCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+        this.playerManagerService = playerManagerService;
         this.utils = utils;
     }
 
@@ -22,7 +24,7 @@ public class PauseCommand implements ISlashCommand {
         if (utils.channelControl(botVoiceState, userVoiceState)) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
-            PlayerManager.getInstance().getMusicManager(event).audioPlayer.setPaused(true);
+            playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
             event.replyEmbeds(embedBuilder.setDescription("Song paused")
                     .setColor(Color.GREEN).build()).queue();
         } else {

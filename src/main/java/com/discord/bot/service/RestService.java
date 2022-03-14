@@ -28,8 +28,8 @@ public class RestService {
     @Value("${spotify_token}")
     private String SPOTIFY_TOKEN;
 
-    public RestService(RestTemplateBuilder restTemplateBuilder) {
-        this.restTemplate = restTemplateBuilder.build();
+    public RestService() {
+        this.restTemplate = new RestTemplateBuilder().build();
     }
 
     public ArrayList<String> getSpotifyMusicName(String spotifyUrl) {
@@ -80,8 +80,8 @@ public class RestService {
 
     public String getYoutubeLink(String musicName) {
         musicName = URLEncoder.encode(musicName, StandardCharsets.UTF_8);
-        String url = "https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q="
-                + musicName + "&safeSearch=strict&key=" + YOUTUBE_API_KEY;
+        String url = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q="
+                + musicName + "&key=" + YOUTUBE_API_KEY;
         URI uri = null;
 
         try {
@@ -99,7 +99,6 @@ public class RestService {
 
         String videoId = jsonElement.getAsJsonObject().getAsJsonArray("items")
                 .get(0).getAsJsonObject().getAsJsonObject("id").get("videoId").getAsString();
-
         return "https://www.youtube.com/watch?v=" + videoId;
     }
 
@@ -108,8 +107,8 @@ public class RestService {
         int counter = 0;
 
         for (String musicName : musicNames) {
-            String url = "https://youtube.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&q="
-                    + musicName + "&safeSearch=strict&key=" + YOUTUBE_API_KEY;
+            String url = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q="
+                    + musicName + "&key=" + YOUTUBE_API_KEY;
             URI uri = null;
 
             try {

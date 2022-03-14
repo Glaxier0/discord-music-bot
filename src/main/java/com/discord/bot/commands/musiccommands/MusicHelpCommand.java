@@ -25,7 +25,7 @@ public class MusicHelpCommand implements ISlashCommand {
                         - /swap
                         - /shuffle
                         """)
-                .setFooter("Bot can't play age restricted videos and shorts.");
+                .setFooter("Bot can't play shorts.");
         event.replyEmbeds(embedBuilder.build()).queue();
     }
 }

@@ -1,7 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.audioplayer.PlayerManager;
+import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -15,8 +15,10 @@ import java.util.List;
 
 public class ShuffleCommand implements ISlashCommand {
     MusicCommandUtils utils;
+    PlayerManagerService playerManagerService;
 
-    public ShuffleCommand(MusicCommandUtils utils) {
+    public ShuffleCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+        this.playerManagerService = playerManagerService;
         this.utils = utils;
     }
 
@@ -26,7 +28,7 @@ public class ShuffleCommand implements ISlashCommand {
         GuildVoiceState userVoiceState = event.getMember().getVoiceState();
         if (utils.channelControl(botVoiceState, userVoiceState)) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            GuildMusicManager musicManager = PlayerManager.getInstance().getMusicManager(event);
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
 
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             if (trackList.size() > 1) {

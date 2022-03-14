@@ -1,6 +1,6 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.PlayerManager;
+import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
@@ -14,8 +14,10 @@ import java.util.concurrent.BlockingQueue;
 
 public class QueueCommand implements ISlashCommand {
     MusicCommandUtils utils;
+    PlayerManagerService playerManagerService;
 
-    public QueueCommand(MusicCommandUtils utils) {
+    public QueueCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+        this.playerManagerService = playerManagerService;
         this.utils = utils;
     }
 
@@ -23,7 +25,7 @@ public class QueueCommand implements ISlashCommand {
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
-        BlockingQueue<AudioTrack> queue = PlayerManager.getInstance().getMusicManager(event).scheduler.queue;
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
         int trackCount = Math.min(queue.size(), 20);
         List<AudioTrack> trackList = new ArrayList<>(queue);
 
