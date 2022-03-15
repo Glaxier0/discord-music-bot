@@ -5,7 +5,6 @@ import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
@@ -23,11 +22,8 @@ public class SwapCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        GuildVoiceState botVoiceState = event.getGuild().getSelfMember().getVoiceState();
-        GuildVoiceState userVoiceState = event.getMember().getVoiceState();
-        if (utils.channelControl(botVoiceState, userVoiceState)) {
+        if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
 
             if (trackList.size() > 1) {

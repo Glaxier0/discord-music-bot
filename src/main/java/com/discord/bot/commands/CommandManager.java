@@ -50,6 +50,7 @@ public class CommandManager extends ListenerAdapter {
         commandsMap.put("queue", new QueueCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("swap", new SwapCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("shuffle", new ShuffleCommand(playerManagerService, musicCommandUtils));
+        commandsMap.put("loop", new LoopCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("mhelp", new MusicHelpCommand(musicCommandUtils));
     }
 }
