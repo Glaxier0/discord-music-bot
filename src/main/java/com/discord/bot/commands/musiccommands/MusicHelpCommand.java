@@ -24,6 +24,7 @@ public class MusicHelpCommand implements ISlashCommand {
                         - /queue
                         - /swap
                         - /shuffle
+                        - /loop
                         """)
                 .setFooter("Bot can't play shorts.");
         event.replyEmbeds(embedBuilder.build()).queue();

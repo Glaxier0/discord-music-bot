@@ -40,6 +40,9 @@ public class TrackScheduler extends AudioEventAdapter {
         if (player.getPlayingTrack() == null) {
             event.getGuild().getAudioManager().closeAudioConnection();
         }
+        if (repeating) {
+            repeating = false;
+        }
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.discord.bot.commands.musiccommands;
 import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
@@ -19,9 +18,7 @@ public class PauseCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        GuildVoiceState botVoiceState = event.getGuild().getSelfMember().getVoiceState();
-        GuildVoiceState userVoiceState = event.getMember().getVoiceState();
-        if (utils.channelControl(botVoiceState, userVoiceState)) {
+        if (utils.channelControl(event)) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
             playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
