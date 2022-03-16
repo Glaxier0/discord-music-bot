@@ -2,7 +2,10 @@ package com.discord.bot;
 
 import com.discord.bot.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.CommandManager;
+import com.discord.bot.dao.TrackRepository;
+import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -24,6 +27,7 @@ import javax.security.auth.login.LoginException;
 public class GlaxierBot {
     RestService restService;
     PlayerManagerService playerManagerService;
+    TrackService trackService;
 
     @Value("${discord_bot_token}")
     private String DISCORD_TOKEN;
@@ -35,16 +39,17 @@ public class GlaxierBot {
     private String PAPISID;
 
 
-    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService) {
+    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService, TrackService trackService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
+        this.trackService = trackService;
     }
 
     @Bean
     public void startDiscordBot() throws LoginException {
         JDA jda = JDABuilder.createDefault(DISCORD_TOKEN)
                 .addEventListeners(
-                        new CommandManager(restService, playerManagerService))
+                        new CommandManager(restService, playerManagerService, trackService))
                 .setActivity(Activity.listening("Type /mhelp")).build();
         addCommands(jda);
         System.out.println("Starting bot is done!");

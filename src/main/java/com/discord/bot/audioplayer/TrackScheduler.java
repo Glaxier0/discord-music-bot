@@ -1,8 +1,11 @@
 package com.discord.bot.audioplayer;
 
+import com.discord.bot.entity.MusicData;
+import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
+import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -18,11 +21,13 @@ public class TrackScheduler extends AudioEventAdapter {
     public boolean repeating = false;
     public SlashCommandInteractionEvent event;
     private int COUNT = 0;
+    TrackService trackService;
 
-    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
+    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event, TrackService trackService) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
         this.event = event;
+        this.trackService = trackService;
     }
 
     public void setEvent(SlashCommandInteractionEvent event) {
@@ -33,6 +38,13 @@ public class TrackScheduler extends AudioEventAdapter {
         if (!this.player.startTrack(track, true)) {
             this.queue.offer(track);
         }
+        long start = System.currentTimeMillis();
+        String title = event.getOption("query").getAsString();
+        MusicData musicData = new MusicData(title, track.getInfo().uri);
+        trackService.save(musicData);
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println(timeElapsed);
     }
 
     public void nextTrack() {
@@ -65,6 +77,10 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+            event.getGuild().getAudioManager().closeAudioConnection();
+            return;
+        }
         if (endReason.mayStartNext) {
             if (this.repeating) {
                 this.player.startTrack(track.makeClone(), false);

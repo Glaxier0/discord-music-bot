@@ -1,5 +1,6 @@
 package com.discord.bot.audioplayer;
 
+import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -21,18 +22,20 @@ import java.util.Map;
 public class PlayerManagerService {
     private final Map<Long, GuildMusicManager> musicManagers;
     private final AudioPlayerManager audioPlayerManager;
+    TrackService trackService;
 
-    public PlayerManagerService() {
+    public PlayerManagerService(TrackService trackService) {
         this.musicManagers = new HashMap<>();
         this.audioPlayerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
         AudioSourceManagers.registerLocalSource(this.audioPlayerManager);
+        this.trackService = trackService;
     }
 
     public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
         return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
+            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event, trackService);
 
             guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
 
