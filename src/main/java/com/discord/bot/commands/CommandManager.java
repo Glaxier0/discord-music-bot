@@ -1,11 +1,11 @@
 package com.discord.bot.commands;
 
-import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class CommandManager extends ListenerAdapter {
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService, TrackService trackService) {
         this.restService = restService;
-        this.playerManagerService= playerManagerService;
+        this.playerManagerService = playerManagerService;
         this.musicCommandUtils = new MusicCommandUtils();
         this.trackService = trackService;
         commandMapper();
