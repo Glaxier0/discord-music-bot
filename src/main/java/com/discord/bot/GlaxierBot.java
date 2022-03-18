@@ -1,8 +1,10 @@
 package com.discord.bot;
 
-import com.discord.bot.audioplayer.PlayerManagerService;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.CommandManager;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.SpotifyTokenService;
+import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.security.auth.login.LoginException;
 
@@ -24,6 +27,8 @@ import javax.security.auth.login.LoginException;
 public class GlaxierBot {
     RestService restService;
     PlayerManagerService playerManagerService;
+    TrackService trackService;
+    SpotifyTokenService spotifyTokenService;
 
     @Value("${discord_bot_token}")
     private String DISCORD_TOKEN;
@@ -35,20 +40,28 @@ public class GlaxierBot {
     private String PAPISID;
 
 
-    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService) {
+    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService, TrackService trackService,
+                      SpotifyTokenService spotifyTokenService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
+        this.trackService = trackService;
+        this.spotifyTokenService = spotifyTokenService;
     }
 
     @Bean
     public void startDiscordBot() throws LoginException {
         JDA jda = JDABuilder.createDefault(DISCORD_TOKEN)
                 .addEventListeners(
-                        new CommandManager(restService, playerManagerService))
+                        new CommandManager(restService, playerManagerService, trackService))
                 .setActivity(Activity.listening("Type /mhelp")).build();
         addCommands(jda);
         System.out.println("Starting bot is done!");
         ageRestriction();
+    }
+
+    @Scheduled(fixedDelay = 3500000)
+    private void refreshSpotifyToken() {
+        spotifyTokenService.getAccessToken();
     }
 
     private void addCommands(JDA jda) {
@@ -61,7 +74,6 @@ public class GlaxierBot {
         }
 
         Guild testServer = jda.getGuildById(TEST_SERVER);
-
         CommandListUpdateAction testServerCommands = testServer.updateCommands();
         CommandListUpdateAction globalCommands = jda.updateCommands();
 

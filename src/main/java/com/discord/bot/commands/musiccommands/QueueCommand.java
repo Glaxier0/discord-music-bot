@@ -1,6 +1,6 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.PlayerManagerService;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;

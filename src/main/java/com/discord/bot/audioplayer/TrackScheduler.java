@@ -1,5 +1,6 @@
 package com.discord.bot.audioplayer;
 
+import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -17,12 +18,14 @@ public class TrackScheduler extends AudioEventAdapter {
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
     public SlashCommandInteractionEvent event;
+    TrackService trackService;
     private int COUNT = 0;
 
-    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
+    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event, TrackService trackService) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
         this.event = event;
+        this.trackService = trackService;
     }
 
     public void setEvent(SlashCommandInteractionEvent event) {
@@ -65,6 +68,10 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
+        if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+            event.getGuild().getAudioManager().closeAudioConnection();
+            return;
+        }
         if (endReason.mayStartNext) {
             if (this.repeating) {
                 this.player.startTrack(track.makeClone(), false);

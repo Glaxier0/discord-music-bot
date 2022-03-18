@@ -1,10 +1,11 @@
 package com.discord.bot.commands;
 
-import com.discord.bot.audioplayer.PlayerManagerService;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.TrackService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -17,12 +18,14 @@ public class CommandManager extends ListenerAdapter {
     RestService restService;
     PlayerManagerService playerManagerService;
     MusicCommandUtils musicCommandUtils;
+    TrackService trackService;
     private Map<String, ISlashCommand> commandsMap;
 
-    public CommandManager(RestService restService, PlayerManagerService playerManagerService) {
+    public CommandManager(RestService restService, PlayerManagerService playerManagerService, TrackService trackService) {
         this.restService = restService;
         this.playerManagerService= playerManagerService;
         this.musicCommandUtils = new MusicCommandUtils();
+        this.trackService = trackService;
         commandMapper();
     }
 
@@ -42,7 +45,7 @@ public class CommandManager extends ListenerAdapter {
         commandsMap.put("guilds", new GuildsCommand());
         commandsMap.put("logs", new LogsCommand());
         //Music Commands
-        commandsMap.put("play", new PlayCommand(restService, playerManagerService));
+        commandsMap.put("play", new PlayCommand(restService, playerManagerService, trackService));
         commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("pause", new PauseCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("resume", new ResumeCommand(playerManagerService, musicCommandUtils));
