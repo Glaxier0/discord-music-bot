@@ -42,7 +42,7 @@ public class PlayerManagerService {
     public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
         return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event, trackService);
+            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
 
             guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
 
