@@ -1,11 +1,9 @@
 package com.discord.bot.audioplayer;
 
-import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioItem;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -20,8 +18,8 @@ public class TrackScheduler extends AudioEventAdapter {
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
     public SlashCommandInteractionEvent event;
-    private int COUNT = 0;
     TrackService trackService;
+    private int COUNT = 0;
 
     public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event, TrackService trackService) {
         this.player = player;
@@ -38,13 +36,6 @@ public class TrackScheduler extends AudioEventAdapter {
         if (!this.player.startTrack(track, true)) {
             this.queue.offer(track);
         }
-        long start = System.currentTimeMillis();
-        String title = event.getOption("query").getAsString();
-        MusicData musicData = new MusicData(title, track.getInfo().uri);
-        trackService.save(musicData);
-        long finish = System.currentTimeMillis();
-        long timeElapsed = finish - start;
-        System.out.println(timeElapsed);
     }
 
     public void nextTrack() {

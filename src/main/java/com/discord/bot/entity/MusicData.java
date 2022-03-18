@@ -1,6 +1,7 @@
 package com.discord.bot.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.core.index.Indexed;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class MusicData {
     @Id
     String id;

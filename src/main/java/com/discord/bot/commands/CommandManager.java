@@ -1,6 +1,6 @@
 package com.discord.bot.commands;
 
-import com.discord.bot.audioplayer.PlayerManagerService;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
