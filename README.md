@@ -1,6 +1,6 @@
 # discord-music-bot
 
-Music bot with slash commands written in java-spring boot
+Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and Redis database.
 
 Discord API - [JDA Wrapper](https://github.com/DV8FromTheWorld/JDA)
 
