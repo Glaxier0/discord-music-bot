@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -87,7 +88,7 @@ public class PlayerManagerService {
             }
         });
     }
-
+    @Async
     public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         musicManager.scheduler.setEvent(event);
@@ -125,9 +126,9 @@ public class PlayerManagerService {
                     //
                 }
             });
-            if (counter > 0) {
-                apiLimitExceeded(event.getChannel());
-            }
+        }
+        if (counter > 0) {
+            apiLimitExceeded(event.getChannel());
         }
         event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() + " tracks queued.")
                 .build()).queue();
