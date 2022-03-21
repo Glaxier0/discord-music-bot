@@ -65,9 +65,11 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
-            event.getGuild().getAudioManager().closeAudioConnection();
-            return;
+        if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+            if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+                event.getGuild().getAudioManager().closeAudioConnection();
+                return;
+            }
         }
         if (endReason.mayStartNext) {
             if (this.repeating) {
