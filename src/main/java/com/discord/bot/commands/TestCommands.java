@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 public class TestCommands {
     public void addTestCommands(JDA jda, String TEST_SERVER) {
-        System.out.println(TEST_SERVER);
         while (jda.getGuildById(TEST_SERVER) == null) {
             try {
                 Thread.sleep(200);

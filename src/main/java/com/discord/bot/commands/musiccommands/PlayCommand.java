@@ -2,7 +2,7 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.ISlashCommand;
-import com.discord.bot.dao.pojo.MusicPojo;
+import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -29,7 +29,7 @@ public class PlayCommand implements ISlashCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = getYoutubeLink(query, event);
+        List<MusicPojo> musicPojos = new ArrayList<>(getYoutubeLink(query, event));
         playMusic(event, musicPojos);
     }
 
@@ -93,7 +93,7 @@ public class PlayCommand implements ISlashCommand {
     }
 
     private List<MusicPojo> spotifyToYoutube(String spotifyUrl) {
-        List<MusicPojo> musicPojoNameList = restService.getSpotifyMusicName(spotifyUrl);
+        List<MusicPojo> musicPojoNameList = new ArrayList<>(restService.getSpotifyMusicName(spotifyUrl));
         return musicPojoNameList;
     }
 

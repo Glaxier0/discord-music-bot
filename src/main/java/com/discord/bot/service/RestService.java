@@ -1,6 +1,6 @@
 package com.discord.bot.service;
 
-import com.discord.bot.dao.pojo.MusicPojo;
+import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.entity.MusicData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -42,9 +42,9 @@ public class RestService {
         if (spotifyUrl.contains("https://open.spotify.com/playlist/")) {
             id = spotifyUrl.substring(34, 56);
             spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
-
+            ResponseEntity<String> spotifyData = getSpotifyData(spotifyUrl);
             JsonArray items = new JsonParser()
-                    .parse(getSpotifyData(spotifyUrl).getBody()).getAsJsonObject().get("items").getAsJsonArray();
+                    .parse(spotifyData.getBody()).getAsJsonObject().get("items").getAsJsonArray();
 
             for (int i = 0; i < items.size(); i++) {
                 String musicName = items.get(i).getAsJsonObject().get("track").getAsJsonObject()
