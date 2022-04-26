@@ -1,7 +1,7 @@
 package com.discord.bot.service.audioplayer;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.dao.pojo.MusicPojo;
+import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
@@ -95,12 +95,11 @@ public class PlayerManagerService {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         event.replyEmbeds(embedBuilder.setDescription("Reading spotify playlist.")
                 .setColor(Color.GREEN).build()).queue();
-        int counter = 0;
+        int errorCounter = 0;
         for (MusicPojo musicPojo : musicPojos) {
             musicPojo.setYoutubeUri(restService.getYoutubeLink(musicPojo).getYoutubeUri());
             if (musicPojo.getYoutubeUri().equals("403glaxierror")) {
-                musicPojos.remove(musicPojo);
-                counter++;
+                errorCounter++;
                 continue;
             }
             this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
@@ -127,10 +126,10 @@ public class PlayerManagerService {
                 }
             });
         }
-        if (counter > 0) {
+        if (errorCounter > 0) {
             apiLimitExceeded(event.getChannel());
         }
-        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() + " tracks queued.")
+        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
                 .build()).queue();
     }
 
