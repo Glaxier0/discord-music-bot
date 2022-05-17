@@ -39,14 +39,15 @@ public class SpotifyRestSerivce {
         final boolean isSingleTrack = spotifyUrl.contains("https://open.spotify.com/track/");
 
         if (isPlaylist) {
-            musicPojos = getSpotifyPlayList(musicPojos);
+            musicPojos = getSpotifyPlayList(String spotifyUrl );
         } else if (isSingleTrack) {
-            musicPojos = getSpotifyTrack(musicPojos);
+            musicPojos = getSpotifyTrack(String spotifyUrl);
         }
         return musicPojos;
     }
 
-    public void getSpotifyPlayList(List<MusicPojo> musicPojos) {
+    public List<MusicPojo> getSpotifyPlayList(String spotifyUrl) {
+        List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(34, 56);
         String spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
         ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
@@ -57,15 +58,18 @@ public class SpotifyRestSerivce {
             JsonObject trackObject = items.get(i).getAsJsonObject().get("track").getAsJsonObject();
             musicPojos.add(new MusicPojo(getMusicName(trackObject), null));
         }
+        return musicPojos;
     }
 
-    public void getSpotifyTrack(List<MusicPojo> musicPojos) {
+    public List<MusicPojo> getSpotifyTrack(String spotifyUrl) {
+        List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(31, 53);
         String spotifyUrl = "https://api.spotify.com/v1/tracks/" + id;
         ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
 
         JsonObject trackObject = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject();
         musicPojos.add(new MusicPojo(getMusicName(trackObject), null));
+        return musicPojos;
     }
 
     private String getMusicName(JsonObject trackObject) {
