@@ -29,8 +29,8 @@ public class YoutubeRestService {
     @Value("${youtube_api_key}")
     private String YOUTUBE_API_KEY;
 
-    public YoutubeRestService(TrackService trackService) {
-        this.restTemplate = new RestTemplateBuilder().build();
+    public YoutubeRestService(RestTemplate restTemplate, TrackService trackService) {
+        this.restTemplate = restTemplate;
         this.trackService = trackService;
     }
 
@@ -39,8 +39,7 @@ public class YoutubeRestService {
         if (musicData != null) {
             musicPojo.setYoutubeUri(musicData.getYoutubeUri());
         } else {
-            String encodedMusicName;
-            encodedMusicName = URLEncoder.encode(musicPojo.getTitle(), StandardCharsets.UTF_8);
+            String encodedMusicName = URLEncoder.encode(musicPojo.getTitle(), StandardCharsets.UTF_8);
             String youtubeUrl = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q="
                     + encodedMusicName + "&key=" + YOUTUBE_API_KEY;
             URI youtubeUri = null;
@@ -50,8 +49,8 @@ public class YoutubeRestService {
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
-            JsonElement jsonElement;
 
+            JsonElement jsonElement;
             try {
                 jsonElement = new JsonParser().parse(restTemplate.getForObject(youtubeUri, String.class));
                 String videoId = jsonElement.getAsJsonObject().getAsJsonArray("items")

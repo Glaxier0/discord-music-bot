@@ -21,6 +21,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class SpotifyRestSerivce {
     public static String SPOTIFY_TOKEN;
@@ -33,41 +34,43 @@ public class SpotifyRestSerivce {
     }
 
     public List<MusicPojo> getSpotifyMusicName(String spotifyUrl) {
-        String id;
         List<MusicPojo> musicPojos = new ArrayList<>();
+        final boolean isPlaylist = spotifyUrl.contains("https://open.spotify.com/playlist/");
+        final boolean isSingleTrack = spotifyUrl.contains("https://open.spotify.com/track/");
 
-        if (spotifyUrl.contains("https://open.spotify.com/playlist/")) {
-            musicPojos = getSpotifyPlayList(musicPojos, spotifyUrl);
-        } else if (spotifyUrl.contains("https://open.spotify.com/track/")) {
-            musicPojos = getSpotifyTrack(musicPojos, spotifyUrl);
+        if (isPlaylist) {
+            musicPojos = getSpotifyPlayList(musicPojos);
+        } else if (isSingleTrack) {
+            musicPojos = getSpotifyTrack(musicPojos);
         }
         return musicPojos;
     }
 
-    public void getSpotifyPlayList (List<MusicPojo> musicPojos, String spotifyUrl) {
-        id = spotifyUrl.substring(34, 56);
-        spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
-        ResponseEntity<String> spotifyData = getSpotifyData(spotifyUrl);
+    public void getSpotifyPlayList(List<MusicPojo> musicPojos) {
+        String id = spotifyUrl.substring(34, 56);
+        String spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
+        ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
         JsonArray items = new JsonParser()
-                .parse(spotifyData.getBody()).getAsJsonObject().get("items").getAsJsonArray();
+                .parse(responseEntity.getBody()).getAsJsonObject().get("items").getAsJsonArray();
 
         for (int i = 0; i < items.size(); i++) {
-            String musicName = items.get(i).getAsJsonObject().get("track").getAsJsonObject()
-                    .getAsJsonArray("artists").get(0).getAsJsonObject().get("name").getAsString() +
-                    " - " + items.get(i).getAsJsonObject().get("track").getAsJsonObject().get("name").getAsString();
-            musicPojos.add(new MusicPojo(musicName, null));
+            JsonObject trackObject = items.get(i).getAsJsonObject().get("track").getAsJsonObject();
+            musicPojos.add(new MusicPojo(getMusicName(trackObject), null));
         }
     }
 
-    public void getSpotifyTrack {List<MusicPojo> musicPojos, String spotifyUrl) {
-        id = spotifyUrl.substring(31, 53);
-        spotifyUrl = "https://api.spotify.com/v1/tracks/" + id;
-
+    public void getSpotifyTrack(List<MusicPojo> musicPojos) {
+        String id = spotifyUrl.substring(31, 53);
+        String spotifyUrl = "https://api.spotify.com/v1/tracks/" + id;
         ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
-        String musicName = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject()
-                .getAsJsonArray("artists").get(0).getAsJsonObject().get("name").getAsString() + " - " +
-                new JsonParser().parse(responseEntity.getBody()).getAsJsonObject().get("name").getAsString();
-        musicPojos.add(new MusicPojo(musicName, null));
+
+        JsonObject trackObject = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject();
+        musicPojos.add(new MusicPojo(getMusicName(trackObject), null));
+    }
+
+    private String getMusicName(JsonObject trackObject) {
+        return trackObject.getAsJsonArray("artists").get(0).getAsJsonObject().get("name").getAsString() +
+                " - " + trackObject.get("name").getAsString();
     }
 
     public ResponseEntity<String> getSpotifyData(String spotifyUrl) {
@@ -84,4 +87,6 @@ public class SpotifyRestSerivce {
         ResponseEntity<String> responseEntity = restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, String.class);
         return responseEntity;
     }
+
+
 }
