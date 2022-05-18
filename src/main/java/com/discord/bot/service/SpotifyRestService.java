@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class SpotifyRestService {
     public static String SPOTIFY_TOKEN;
     private final RestTemplate restTemplate;

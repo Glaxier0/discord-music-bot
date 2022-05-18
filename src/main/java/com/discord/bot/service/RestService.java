@@ -5,6 +5,7 @@ import com.discord.bot.entity.MusicData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -28,14 +29,16 @@ public class RestService {
     private final RestTemplate restTemplate;
     TrackService trackService;
 
+    @Autowired
     private YoutubeRestService youtubeRestService;
+    
+    @Autowired
     private SpotifyRestService spotifyRestService;
 
+    @Autowired
     public RestService(TrackService trackService) {
         this.restTemplate = new RestTemplateBuilder().build();
         this.trackService = trackService;
-        youtubeRestService = new YoutubeRestService(restTemplate, trackService);
-        spotifyRestService = new SpotifyRestService(restTemplate, trackService);
     }
 
     public MusicPojo getYoutubeLink(MusicPojo musicPojo) {
