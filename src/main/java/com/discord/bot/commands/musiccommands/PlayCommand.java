@@ -18,7 +18,6 @@ import java.util.List;
 public class PlayCommand extends MusicPlayerCommand {
     private TrackService trackService;
     private RestService restService;
-    private MusicLoader musicLoader;
 
     public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService, MusicCommandUtils utils) {
         this.restService = restService;
@@ -30,7 +29,7 @@ public class PlayCommand extends MusicPlayerCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = musicLoader.getMusicPojos(query, event.getChannel());
+        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event.getChannel());
         playMusic(event, musicPojos);
     }
 
