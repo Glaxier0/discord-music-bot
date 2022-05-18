@@ -1,15 +1,17 @@
 package com.discord.bot.loader;
 
+import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.service.RestService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MusicLoader {
-    public List<MusicPojo> loadMusicUsingQuery(RestService restService, String query, MessageChannel channel) {
+    public List<MusicPojo> loadMusicUsingQuery(RestService restService, String query, SlashCommandInteractionEvent event) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         final boolean isYoutubeUrl = query.contains("https://www.youtube.com/watch?v=");
         final boolean isSpotifyUrl = query.contains("https://open.spotify.com/");
@@ -23,7 +25,7 @@ public class MusicLoader {
             final boolean isYoutubeHasError = musicPojo.getYoutubeUri().equals("403glaxierror");
 
             if (isYoutubeHasError) {
-                apiLimitExceeded(channel);
+                apiLimitExceeded(event.getChannel());
             } else {
                 musicPojos.add(musicPojo);
             }

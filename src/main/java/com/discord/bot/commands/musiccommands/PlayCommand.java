@@ -29,7 +29,7 @@ public class PlayCommand extends MusicPlayerCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event.getChannel());
+        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
         playMusic(event, musicPojos);
     }
 
