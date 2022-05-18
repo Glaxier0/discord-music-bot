@@ -29,7 +29,13 @@ public class ShuffleCommand implements ISlashCommand {
 
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             if (trackList.size() > 1) {
-                ShuffleCollection(trackList, musicManager);
+                Collections.shuffle(trackList);
+                musicManager.scheduler.queue.clear();
+
+                for (AudioTrack track : trackList) {
+                    musicManager.scheduler.queue(track);
+                }
+
                 embedBuilder.setDescription("Queue shuffled").setColor(Color.GREEN);
             } else {
                 embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
@@ -38,15 +44,6 @@ public class ShuffleCommand implements ISlashCommand {
         } else {
             event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
                     .setColor(Color.RED).build()).queue();
-        }
-    }
-
-    public void ShuffleCollection(List<AudioTrack> trackList, GuildMusicManager musicManager) {
-        Collections.shuffle(trackList);
-        musicManager.scheduler.queue.clear();
-
-        for (AudioTrack track : trackList) {
-            musicManager.scheduler.queue(track);
         }
     }
 }
