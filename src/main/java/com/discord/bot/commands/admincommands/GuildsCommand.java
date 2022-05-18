@@ -1,6 +1,5 @@
 package com.discord.bot.commands.admincommands;
 
-import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -9,12 +8,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class GuildsCommand implements ISlashCommand {
-    String ADMIN = "315403352496275456";
-
+public class GuildsCommand extends AdminCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (event.getUser().getId().equals(ADMIN)) {
+        if (event.getUser().getId().equals(ADMIN_ID)) {
             try {
                 File guildsFile = new File("guilds.txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(guildsFile, true));

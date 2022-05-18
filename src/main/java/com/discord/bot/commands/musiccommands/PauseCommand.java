@@ -1,16 +1,12 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
 
-public class PauseCommand implements ISlashCommand {
-    MusicCommandUtils utils;
-    PlayerManagerService playerManagerService;
-
+public class PauseCommand extends MusicPlayerCommand {
     public PauseCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
         this.playerManagerService = playerManagerService;
         this.utils = utils;

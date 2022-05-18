@@ -2,7 +2,6 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -12,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ShuffleCommand implements ISlashCommand {
-    MusicCommandUtils utils;
-    PlayerManagerService playerManagerService;
-
+public class ShuffleCommand extends MusicPlayerCommand {
+    
     public ShuffleCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
         this.playerManagerService = playerManagerService;
         this.utils = utils;

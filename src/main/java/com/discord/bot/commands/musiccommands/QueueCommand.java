@@ -1,7 +1,6 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -12,9 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-public class QueueCommand implements ISlashCommand {
-    MusicCommandUtils utils;
-    PlayerManagerService playerManagerService;
+public class QueueCommand extends MusicPlayerCommand {
 
     public QueueCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
         this.playerManagerService = playerManagerService;

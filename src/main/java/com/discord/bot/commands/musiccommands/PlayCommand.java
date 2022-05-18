@@ -1,8 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.commands.ISlashCommand;
-import com.discord.bot.entity.pojo.MusicPojo;
+import com.discord.bot.dao.pojo.MusicPojo;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -15,34 +14,32 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayCommand implements ISlashCommand {
-    RestService restService;
-    PlayerManagerService playerManagerService;
-    TrackService trackService;
+public class PlayCommand extends MusicPlayerCommand {
+    private TrackService trackService;
+    private RestService restService;
 
-    public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService) {
+    public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService, MusicCommandUtils utils) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.trackService = trackService;
+        this.utils = utils;
     }
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new ArrayList<>(getYoutubeLink(query, event));
+        List<MusicPojo> musicPojos = getYoutubeLink(query, event);
         playMusic(event, musicPojos);
     }
 
     private void playMusic(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
         AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-        boolean isUserInVoiceChannel = event.getMember().getVoiceState().inAudioChannel();
-        boolean isBotInVoiceChannel = event.getGuild().getSelfMember().getVoiceState().inAudioChannel();
 
-        if (isUserInVoiceChannel) {
+        if (utils.isUserInVoiceChannel(event)) {
             int trackSize = musicPojos.size();
             if (trackSize != 0) {
-                if (!isBotInVoiceChannel) {
+                if (utils.isBotInVoiceChannel(event) == false) {
                     GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
                     if (musicManager.scheduler.repeating) {
                         musicManager.scheduler.repeating = false;
@@ -93,7 +90,7 @@ public class PlayCommand implements ISlashCommand {
     }
 
     private List<MusicPojo> spotifyToYoutube(String spotifyUrl) {
-        List<MusicPojo> musicPojoNameList = new ArrayList<>(restService.getSpotifyMusicName(spotifyUrl));
+        List<MusicPojo> musicPojoNameList = restService.getSpotifyMusicName(spotifyUrl);
         return musicPojoNameList;
     }
 
