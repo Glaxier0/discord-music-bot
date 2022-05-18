@@ -7,8 +7,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpotifyMusicLoader extends MusicLoader {
-    @Override
+public class SpotifyMusicLoader {
     public List<MusicPojo> getMusicPojos(RestService restService, String query) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         musicPojos = spotifyToYoutube(restService, query);

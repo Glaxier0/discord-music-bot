@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MusicLoader {
+public class MusicLoader {
     public List<MusicPojo> loadMusicUsingQuery(RestService restService, String query, MessageChannel channel) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         final boolean isYoutubeUrl = query.contains("https://www.youtube.com/watch?v=");
@@ -31,7 +31,6 @@ public abstract class MusicLoader {
 
         return musicPojos;
     }
-    protected abstract List<MusicPojo> getMusicPojos(RestService restService, String query);
 
     private void apiLimitExceeded(MessageChannel channel) {
         channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +

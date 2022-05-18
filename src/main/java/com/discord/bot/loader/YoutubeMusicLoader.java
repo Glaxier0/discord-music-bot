@@ -9,8 +9,7 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class YoutubeMusicLoader extends MusicLoader {
-    @Override
+public class YoutubeMusicLoader {
     public List<MusicPojo> getMusicPojos(RestService restService, String query) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         musicPojos.add(new MusicPojo(null, query));
