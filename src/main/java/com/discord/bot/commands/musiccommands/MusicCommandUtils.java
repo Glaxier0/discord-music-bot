@@ -18,7 +18,7 @@ public class MusicCommandUtils {
     }
 
     public boolean isBotInVoiceChannel(SlashCommandInteractionEvent event) {
-        return event.getMember().getVoiceState().inAudioChannel();
+        return event.getGuild().getSelfMember().getVoiceState().inAudioChannel();
     }
 
     public boolean isUserInVoiceChannel(SlashCommandInteractionEvent event) {
