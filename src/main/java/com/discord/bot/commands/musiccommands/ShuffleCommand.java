@@ -26,13 +26,7 @@ public class ShuffleCommand extends MusicPlayerCommand {
 
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             if (trackList.size() > 1) {
-                Collections.shuffle(trackList);
-                musicManager.scheduler.queue.clear();
-
-                for (AudioTrack track : trackList) {
-                    musicManager.scheduler.queue(track);
-                }
-
+                ShuffleCollection(musicManager, trackList);
                 embedBuilder.setDescription("Queue shuffled").setColor(Color.GREEN);
             } else {
                 embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
@@ -41,6 +35,15 @@ public class ShuffleCommand extends MusicPlayerCommand {
         } else {
             event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
                     .setColor(Color.RED).build()).queue();
+        }
+    }
+
+    private void ShuffleCollection(GuildMusicManager musicManager, List<AudioTrack> trackList) {
+        Collections.shuffle(trackList);
+        musicManager.scheduler.queue.clear();
+
+        for (AudioTrack track : trackList) {
+            musicManager.scheduler.queue(track);
         }
     }
 }
