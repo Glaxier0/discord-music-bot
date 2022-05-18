@@ -32,6 +32,8 @@ public class SpotifyRestService {
     private final String PLAYLIST_URL = "https://open.spotify.com/playlist/";
     private final String TRACK_URL = "https://open.spotify.com/track/";
     private final String API_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
+    
+    private final String API_SINGLE_TRACK_URL = "https://api.spotify.com/v1/tracks/";
     private final String API_TRACK_URL = "/tracks?fields=items(track(name,artists(name)))";
     public SpotifyRestService(RestTemplate restTemplate, TrackService trackService) {
         this.restTemplate = restTemplate;
@@ -68,7 +70,7 @@ public class SpotifyRestService {
     public List<MusicPojo> getSpotifyTrack(String spotifyUrl) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(31, 53);
-        spotifyUrl = API_PLAYLIST_URL + id;
+        spotifyUrl = API_SINGLE_TRACK_URL + id;
         ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
 
         JsonObject trackObject = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject();

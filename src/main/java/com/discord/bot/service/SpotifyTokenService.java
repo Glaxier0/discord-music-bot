@@ -37,6 +37,6 @@ public class SpotifyTokenService {
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(bodyParamMap, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
         String accessToken = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject().get("access_token").getAsString();
-        RestService.SPOTIFY_TOKEN = accessToken;
+        SpotifyRestService.SPOTIFY_TOKEN = accessToken;
     }
 }
