@@ -2,6 +2,7 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.entity.pojo.MusicPojo;
+import com.discord.bot.loader.MusicLoader;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -28,7 +29,7 @@ public class PlayCommand extends MusicPlayerCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = getYoutubeLink(query, event);
+        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
         playMusic(event, musicPojos);
     }
 
@@ -70,32 +71,4 @@ public class PlayCommand extends MusicPlayerCommand {
         }
     }
 
-    private List<MusicPojo> getYoutubeLink(String query, SlashCommandInteractionEvent event) {
-        List<MusicPojo> musicPojos = new ArrayList<>();
-        MusicPojo musicPojo;
-        if (query.contains("https://www.youtube.com/watch?v=")) {
-            musicPojo = new MusicPojo(null, query);
-            musicPojos.add(musicPojo);
-        } else if (query.contains("https://open.spotify.com/")) {
-            musicPojos = spotifyToYoutube(query);
-        } else {
-            musicPojo = restService.getYoutubeLink(new MusicPojo(query, null));
-            if (musicPojo.getYoutubeUri().equals("403glaxierror")) {
-                apiLimitExceeded(event.getChannel());
-            } else {
-                musicPojos.add(musicPojo);
-            }
-        }
-        return musicPojos;
-    }
-
-    private List<MusicPojo> spotifyToYoutube(String spotifyUrl) {
-        List<MusicPojo> musicPojoNameList = restService.getSpotifyMusicName(spotifyUrl);
-        return musicPojoNameList;
-    }
-
-    private void apiLimitExceeded(MessageChannel channel) {
-        channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
-                "Please use youtube links to play music for today.").build()).queue();
-    }
 }
