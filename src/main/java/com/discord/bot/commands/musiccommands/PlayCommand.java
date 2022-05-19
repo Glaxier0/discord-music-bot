@@ -1,7 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.dao.pojo.MusicPojo;
+import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
