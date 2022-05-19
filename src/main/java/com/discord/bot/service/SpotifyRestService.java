@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class SpotifyRestService {
     public static String SPOTIFY_TOKEN;
     private final RestTemplate restTemplate;
@@ -31,7 +32,8 @@ public class SpotifyRestService {
     private final String PLAYLIST_URL = "https://open.spotify.com/playlist/";
     private final String TRACK_URL = "https://open.spotify.com/track/";
     private final String API_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
-    private final String API_TRACK_URL = "/tracks?fields=items(track(name,artists(name)))";
+    private final String API_SINGLE_TRACK_URL = "/tracks?fields=items(track(name,artists(name)))";
+
     public SpotifyRestService(RestTemplate restTemplate, TrackService trackService) {
         this.restTemplate = restTemplate;
         this.trackService = trackService;
@@ -53,7 +55,7 @@ public class SpotifyRestService {
     public List<MusicPojo> getSpotifyPlayList(String spotifyUrl) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(34, 56);
-        spotifyUrl = API_PLAYLIST_URL + id + API_TRACK_URL;
+        spotifyUrl = API_PLAYLIST_URL + id + API_SINGLE_TRACK_URL;
         ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
         JsonArray items = JsonParser.parseString(responseEntity.getBody()).getAsJsonObject().get("items").getAsJsonArray();
 

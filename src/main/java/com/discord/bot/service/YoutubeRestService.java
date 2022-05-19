@@ -5,6 +5,7 @@ import com.discord.bot.entity.MusicData;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -22,12 +23,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class YoutubeRestService {
-    private final RestTemplate restTemplate;
+    private RestTemplate restTemplate;
     TrackService trackService;
     @Value("${youtube_api_key}")
     private String YOUTUBE_API_KEY;
 
+    @Autowired
     public YoutubeRestService(RestTemplate restTemplate, TrackService trackService) {
         this.restTemplate = restTemplate;
         this.trackService = trackService;
