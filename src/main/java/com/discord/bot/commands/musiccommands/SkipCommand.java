@@ -15,7 +15,7 @@ public class SkipCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             playerManagerService.getMusicManager(event).scheduler.nextTrack();
             event.replyEmbeds(new EmbedBuilder().setDescription("Song skipped").setColor(Color.GREEN).build()).queue();
         } else {

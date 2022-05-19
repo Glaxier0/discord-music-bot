@@ -16,7 +16,7 @@ public class LoopCommand extends MusicPlayerCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             boolean repeat = playerManagerService.getMusicManager(event).scheduler.repeating;
             playerManagerService.getMusicManager(event).scheduler.repeating = !repeat;
             if (!repeat) {

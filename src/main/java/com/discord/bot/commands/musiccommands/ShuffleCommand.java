@@ -20,7 +20,7 @@ public class ShuffleCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
 
