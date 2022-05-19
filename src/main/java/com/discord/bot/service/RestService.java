@@ -31,6 +31,7 @@ public class RestService {
 
     @Autowired
     private YoutubeRestService youtubeRestService;
+    
     @Autowired
     private SpotifyRestService spotifyRestService;
 
