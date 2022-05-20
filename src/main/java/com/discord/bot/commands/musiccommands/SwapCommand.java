@@ -19,7 +19,7 @@ public class SwapCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
 

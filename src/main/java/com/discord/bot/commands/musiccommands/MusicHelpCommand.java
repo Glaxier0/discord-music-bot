@@ -14,7 +14,11 @@ public class MusicHelpCommand implements ISlashCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
+        showDetailOption(embedBuilder);
+        event.replyEmbeds(embedBuilder.build()).queue();
+    }
 
+    private void showDetailOption(EmbedBuilder embedBuilder) {
         embedBuilder.setTitle("Music Commands").setDescription("""
                         - /play
                         - /skip
@@ -27,6 +31,5 @@ public class MusicHelpCommand implements ISlashCommand {
                         - /loop
                         """)
                 .setFooter("Bot can't play shorts.");
-        event.replyEmbeds(embedBuilder.build()).queue();
     }
 }

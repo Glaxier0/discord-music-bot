@@ -14,7 +14,7 @@ public class PauseCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             EmbedBuilder embedBuilder = new EmbedBuilder();
 
             playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);

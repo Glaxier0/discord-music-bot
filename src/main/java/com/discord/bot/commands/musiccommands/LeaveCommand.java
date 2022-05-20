@@ -16,7 +16,7 @@ public class LeaveCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
+        if (utils.isBotAndUserInSameChannel(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             AudioManager audioManager = event.getGuild().getAudioManager();
 
