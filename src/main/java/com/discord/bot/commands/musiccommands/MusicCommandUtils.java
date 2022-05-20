@@ -1,5 +1,6 @@
 package com.discord.bot.commands.musiccommands;
 
+import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class MusicCommandUtils {
@@ -10,7 +11,9 @@ public class MusicCommandUtils {
         if (!isUserInVoiceChannel(event)) {
             return false;
         }
-        return isUserInVoiceChannel(event) == isUserInVoiceChannel(event);
+        GuildVoiceState selfVoiceState = event.getGuild().getSelfMember().getVoiceState();
+        GuildVoiceState botVoiceState = event.getMember().getVoiceState();
+        return selfVoiceState.getChannel() == botVoiceState.getChannel();
     }
 
     public boolean isBotInVoiceChannel(SlashCommandInteractionEvent event) {
