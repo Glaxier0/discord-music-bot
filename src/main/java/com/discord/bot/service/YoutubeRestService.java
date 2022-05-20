@@ -29,6 +29,8 @@ public class YoutubeRestService {
     TrackService trackService;
     @Value("${youtube_api_key}")
     private String YOUTUBE_API_KEY;
+    private final String YOUTUBE_API_URL = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q=";
+    private final String YOUTUBE_VIDEO_URL = "https://www.youtube.com/watch?v=";
 
     @Autowired
     public YoutubeRestService(RestTemplate restTemplate, TrackService trackService) {
@@ -42,8 +44,7 @@ public class YoutubeRestService {
             musicPojo.setYoutubeUri(musicData.getYoutubeUri());
         } else {
             String encodedMusicName = URLEncoder.encode(musicPojo.getTitle(), StandardCharsets.UTF_8);
-            String youtubeUrl = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q="
-                    + encodedMusicName + "&key=" + YOUTUBE_API_KEY;
+            String youtubeUrl = YOUTUBE_API_URL + encodedMusicName + "&key=" + YOUTUBE_API_KEY;
             URI youtubeUri = null;
 
             try {
@@ -57,7 +58,7 @@ public class YoutubeRestService {
                 jsonElement = new JsonParser().parse(restTemplate.getForObject(youtubeUri, String.class));
                 String videoId = jsonElement.getAsJsonObject().getAsJsonArray("items")
                         .get(0).getAsJsonObject().getAsJsonObject("id").get("videoId").getAsString();
-                musicPojo.setYoutubeUri("https://www.youtube.com/watch?v=" + videoId);
+                musicPojo.setYoutubeUri(YOUTUBE_VIDEO_URL + videoId);
             } catch (HttpClientErrorException.Forbidden exception) {
                 musicPojo.setYoutubeUri("403glaxierror");
             }

@@ -53,7 +53,7 @@ public class SpotifyRestService {
         return musicPojos;
     }
 
-    public List<MusicPojo> getSpotifyPlayList(String spotifyUrl) {
+    private List<MusicPojo> getSpotifyPlayList(String spotifyUrl) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(34, 56);
         spotifyUrl = API_PLAYLIST_URL + id + API_TRACK_URL;
@@ -67,7 +67,7 @@ public class SpotifyRestService {
         return musicPojos;
     }
 
-    public List<MusicPojo> getSpotifyTrack(String spotifyUrl) {
+    private List<MusicPojo> getSpotifyTrack(String spotifyUrl) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         String id = spotifyUrl.substring(31, 53);
         spotifyUrl = API_SINGLE_TRACK_URL + id;
@@ -83,7 +83,7 @@ public class SpotifyRestService {
                 " - " + trackObject.get("name").getAsString();
     }
 
-    public ResponseEntity<String> getSpotifyData(String spotifyUrl) {
+    private ResponseEntity<String> getSpotifyData(String spotifyUrl) {
         URI spotifyUri = null;
 
         try {

@@ -27,6 +27,14 @@ public class SpotifyTokenService {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
+
+        HttpEntity<MultiValueMap<String, String>> entity = buildHttpEntity();
+        ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+        String accessToken = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject().get("access_token").getAsString();
+        SpotifyRestService.SPOTIFY_TOKEN = accessToken;
+    }
+
+    private HttpEntity<MultiValueMap<String, String>> buildHttpEntity() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> bodyParamMap = new LinkedMultiValueMap<>();
@@ -34,9 +42,6 @@ public class SpotifyTokenService {
         bodyParamMap.add("client_id", CLIENT_ID);
         bodyParamMap.add("client_secret", CLIENT_SECRET);
 
-        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(bodyParamMap, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
-        String accessToken = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject().get("access_token").getAsString();
-        SpotifyRestService.SPOTIFY_TOKEN = accessToken;
+        return new HttpEntity<>(bodyParamMap, headers);
     }
 }
