@@ -25,7 +25,6 @@ import java.util.List;
 
 @Service
 public class RestService {
-    public static String SPOTIFY_TOKEN;
     private final RestTemplate restTemplate;
     TrackService trackService;
 
