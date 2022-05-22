@@ -7,6 +7,7 @@ import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
+import com.discord.bot.utils.EmbedMessageSender;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -14,7 +15,6 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ public class PlayerManagerService {
     public void loadAndPlay(SlashCommandInteractionEvent event, MusicPojo musicPojo) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        AudioLoadResultHandler resultHandler = new SingleAudioLoadResultHandler(this, embedBuilder, event, musicManager, musicPojo);
+        AudioLoadResultHandler resultHandler = new SingleAudioLoadResultHandler(musicManager, event, musicPojo, trackService);
         this.audioPlayerManager.loadItemOrdered(
                 musicManager,
                 musicPojo.getYoutubeUri(),
@@ -68,11 +68,15 @@ public class PlayerManagerService {
     public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         musicManager.scheduler.setEvent(event);
-        
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        event.replyEmbeds(embedBuilder.setDescription("Reading spotify playlist.")
-                .setColor(Color.GREEN).build()).queue();
-        
+
+        EmbedMessageSender.sendReplyEmbed(
+            event,
+            new EmbedBuilder()
+                .setDescription("Reading spotify playlist.")
+                .setColor(Color.GREEN)
+                .build()
+        );
+
         int errorCounter = 0;
         for (MusicPojo musicPojo : musicPojos) {
             musicPojo.setYoutubeUri(restService.getYoutubeLink(musicPojo).getYoutubeUri());
@@ -84,30 +88,22 @@ public class PlayerManagerService {
             this.audioPlayerManager.loadItemOrdered(
                 musicManager,
                 musicPojo.getYoutubeUri(),
-                    new MultipleAudioLoadResultHandler(this, musicManager, musicPojo)
+                new MultipleAudioLoadResultHandler(musicManager, musicPojo, trackService)
             );
         }
         if (errorCounter > 0) {
-            apiLimitExceeded(event.getChannel());
+            EmbedMessageSender.sendEmbedToChannel(
+                    event.getChannel(),
+                new EmbedBuilder()
+                    .setDescription("Youtube quota has exceeded. " + "Please use youtube links to play music for today.")
+                    .build()
+            );
         }
-        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
-                .build()).queue();
+        EmbedMessageSender.sendEmbedToChannel(
+            event.getChannel(),
+            new EmbedBuilder()
+                .setDescription(musicPojos.size() - errorCounter + " tracks queued.")
+                .build()
+        );
     }
-
-    public void cacheTrack(AudioTrack track, String title) {
-        if (title != null) {
-            MusicData musicData = new MusicData(title, track.getInfo().uri);
-            MusicData redisMusicData = trackService.findFirst1ByTitle(musicData.getTitle());
-            if (redisMusicData == null) {
-                trackService.save(musicData);
-            }
-        }
-    }
-
-    private void apiLimitExceeded(MessageChannel channel) {
-        channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
-                "Please use youtube links to play music for today.").build()).queue();
-    }
-
-
 }

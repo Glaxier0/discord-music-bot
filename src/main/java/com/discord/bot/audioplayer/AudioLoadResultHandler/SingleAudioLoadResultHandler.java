@@ -2,7 +2,9 @@ package com.discord.bot.audioplayer.AudioLoadResultHandler;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.entity.pojo.MusicPojo;
+import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
+import com.discord.bot.utils.EmbedMessageSender;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -14,36 +16,36 @@ import java.awt.*;
 import java.util.List;
 
 public class SingleAudioLoadResultHandler implements AudioLoadResultHandler {
-    private final PlayerManagerService playerManagerService;
-    private final EmbedBuilder embedBuilder;
     private final SlashCommandInteractionEvent event;
     private final GuildMusicManager musicManager;
     private final MusicPojo musicPojo;
+    TrackService trackService;
 
-    public SingleAudioLoadResultHandler(PlayerManagerService playerManagerService, EmbedBuilder embedBuilder, SlashCommandInteractionEvent event, GuildMusicManager musicManager, MusicPojo musicPojo) {
-        this.playerManagerService = playerManagerService;
-        this.embedBuilder = embedBuilder;
+    public SingleAudioLoadResultHandler(GuildMusicManager musicManager,SlashCommandInteractionEvent event,  MusicPojo musicPojo, TrackService trackService) {
         this.event = event;
         this.musicManager = musicManager;
         this.musicPojo = musicPojo;
+        this.trackService = trackService;
     }
 
     @Override
     public void trackLoaded(AudioTrack track) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.clear();
-        event.replyEmbeds(
+        EmbedMessageSender.sendReplyEmbed(
+            event,
             embedBuilder
                 .setDescription(
-                        "Song added to queue: " + track.getInfo().title
-                                + "\n in queue: " + (musicManager.scheduler.queue.size() + 1))
+                    "Song added to queue: " + track.getInfo().title
+                            + "\n in queue: " + (musicManager.scheduler.queue.size() + 1))
                 .setColor(Color.GREEN)
                 .build()
-        ).queue();
+        );
 
         musicManager.scheduler.setEvent(event);
         musicManager.scheduler.queue(track);
         String title = musicPojo.getTitle();
-        playerManagerService.cacheTrack(track, title);
+        trackService.cache(title, track.getInfo().uri);
     }
 
     @Override
@@ -53,12 +55,13 @@ public class SingleAudioLoadResultHandler implements AudioLoadResultHandler {
         for (AudioTrack track : tracks) {
             musicManager.scheduler.queue(track);
         }
-        event.replyEmbeds(
-                embedBuilder
-                        .setDescription(tracks.size() + " song added to queue.")
-                        .setColor(Color.GREEN)
-                        .build()
-        ).queue();
+        EmbedMessageSender.sendReplyEmbed(
+            event,
+            new EmbedBuilder()
+                .setDescription(tracks.size() + " song added to queue.")
+                .setColor(Color.GREEN)
+                .build()
+        );
     }
 
     @Override
