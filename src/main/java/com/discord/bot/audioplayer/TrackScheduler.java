@@ -48,11 +48,11 @@ public class TrackScheduler extends AudioEventAdapter {
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
         event.getChannel().sendMessageEmbeds(
-                new EmbedBuilder()
-                        .setTitle("Now playing")
-                        .setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
-                        .setColor(Color.GREEN)
-                        .build()
+            new EmbedBuilder()
+                    .setTitle("Now playing")
+                    .setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
+                    .setColor(Color.GREEN)
+                    .build()
         ).queue();
     }
 
@@ -61,10 +61,10 @@ public class TrackScheduler extends AudioEventAdapter {
         if (COUNT >= 1) {
             COUNT = 0;
             event.getChannel().sendMessageEmbeds(
-                    new EmbedBuilder()
-                        .setDescription("Track failed to start.")
-                        .build()
-            ).queue();
+                new EmbedBuilder()
+                    .setDescription("Track failed to start.")
+                    .build()
+            ).queue(); 
             return;
         }
         player.startTrack(track.makeClone(), false);
