@@ -2,6 +2,7 @@ package com.discord.bot.service;
 
 import com.discord.bot.dao.TrackRepository;
 import com.discord.bot.entity.MusicData;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,5 +36,16 @@ public class TrackServiceImpl implements TrackService {
     @Override
     public void deleteAll() {
         trackRepository.deleteAll();
+    }
+
+    @Override
+    public void cache(String title, String uri) {
+        if (title != null) {
+            MusicData musicData = new MusicData(title, uri);
+            MusicData redisMusicData = findFirst1ByTitle(musicData.getTitle());
+            if (redisMusicData == null) {
+                save(musicData);
+            }
+        }
     }
 }
