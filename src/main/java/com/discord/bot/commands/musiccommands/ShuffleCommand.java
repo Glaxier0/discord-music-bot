@@ -19,23 +19,26 @@ public class ShuffleCommand extends MusicPlayerCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        if (utils.isBotAndUserInSameChannel(event)) {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-
-            List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
-            if (trackList.size() > 1) {
-                ShuffleCollection(musicManager, trackList);
-                embedBuilder.setDescription("Queue shuffled").setColor(Color.GREEN);
-            } else {
-                embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
-            }
-            event.replyEmbeds(embedBuilder.build()).queue();
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+        GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+        List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
+        if (trackList.size() > 1) {
+            ShuffleCollection(musicManager, trackList);
+            embedBuilder.setDescription("Queue shuffled").setColor(Color.GREEN);
         } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
-                    .setColor(Color.RED).build()).queue();
+            embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
         }
+        event.replyEmbeds(embedBuilder.build()).queue();
+    }
+
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        return utils.isBotAndUserInSameChannel(event);
+    }
+
+    @Override
+    String getFailDescription() {
+        return "Please be in a same voice channel as bot.";
     }
 
     private void ShuffleCollection(GuildMusicManager musicManager, List<AudioTrack> trackList) {

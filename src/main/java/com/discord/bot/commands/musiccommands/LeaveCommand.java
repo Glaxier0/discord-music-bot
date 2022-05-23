@@ -15,18 +15,22 @@ public class LeaveCommand extends MusicPlayerCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        if (utils.isBotAndUserInSameChannel(event)) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-            AudioManager audioManager = event.getGuild().getAudioManager();
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+        GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+        AudioManager audioManager = event.getGuild().getAudioManager();
+        musicManager.scheduler.player.stopTrack();
+        musicManager.scheduler.queue.clear();
+        audioManager.closeAudioConnection();
+        event.replyEmbeds(embedBuilder.setDescription("Bye.").build()).queue();
+    }
 
-            musicManager.scheduler.player.stopTrack();
-            musicManager.scheduler.queue.clear();
-            audioManager.closeAudioConnection();
-            event.replyEmbeds(new EmbedBuilder().setDescription("Bye.").build()).queue();
-        } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
-                    .setColor(Color.RED).build()).queue();
-        }
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        return utils.isBotAndUserInSameChannel(event);
+    }
+
+    @Override
+    String getFailDescription() {
+        return "Please be in a same voice channel as bot.";
     }
 }

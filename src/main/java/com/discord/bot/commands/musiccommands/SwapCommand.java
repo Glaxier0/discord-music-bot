@@ -18,24 +18,29 @@ public class SwapCommand extends MusicPlayerCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        if (utils.isBotAndUserInSameChannel(event)) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-            List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+        GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+        List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
 
-            if (trackList.size() > 1) {
-                swapTrack(event, musicManager, trackList);
-            } else if (trackList.size() == 1) {
-                event.replyEmbeds(new EmbedBuilder().setDescription("There is only one song in queue.")
-                        .setColor(Color.RED).build()).queue();
-            } else {
-                event.replyEmbeds(new EmbedBuilder().setDescription("Queue is empty.")
-                        .setColor(Color.RED).build()).queue();
-            }
+        if (trackList.size() > 1) {
+            swapTrack(event, musicManager, trackList);
+        } else if (trackList.size() == 1) {
+            event.replyEmbeds(embedBuilder.setDescription("There is only one song in queue.")
+                    .setColor(Color.RED).build()).queue();
         } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
+            event.replyEmbeds(embedBuilder.setDescription("Queue is empty.")
                     .setColor(Color.RED).build()).queue();
         }
+    }
+
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        return utils.isBotAndUserInSameChannel(event);
+    }
+
+    @Override
+    String getFailDescription() {
+        return "Please be in a same voice channel as bot.";
     }
 
     private void swapTrack(SlashCommandInteractionEvent event, GuildMusicManager musicManager, List<AudioTrack> trackList) {
