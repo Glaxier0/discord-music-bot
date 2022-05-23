@@ -13,16 +13,20 @@ public class PauseCommand extends MusicPlayerCommand {
     }
 
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        if (utils.isBotAndUserInSameChannel(event)) {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
-            playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
-            event.replyEmbeds(embedBuilder.setDescription("Song paused")
-                    .setColor(Color.GREEN).build()).queue();
-        } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
-                    .setColor(Color.RED).build()).queue();
-        }
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+        playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
+        event.replyEmbeds(embedBuilder.setDescription("Song paused")
+                .setColor(Color.GREEN).build()).queue();
     }
+
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        return utils.isBotAndUserInSameChannel(event);
+    }
+
+    @Override
+    String getFailDescription() {
+        return "Please be in a same voice channel as bot.";
+    }
+
 }

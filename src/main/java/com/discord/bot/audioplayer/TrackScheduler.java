@@ -1,5 +1,6 @@
 package com.discord.bot.audioplayer;
 
+import com.discord.bot.utils.EmbedMessageSender;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -47,24 +48,26 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        event.getChannel().sendMessageEmbeds(
-                new EmbedBuilder()
-                        .setTitle("Now playing")
-                        .setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
-                        .setColor(Color.GREEN)
-                        .build()
-        ).queue();
+        EmbedMessageSender.sendEmbedToChannel(
+            event.getChannel(),
+            new EmbedBuilder()
+                .setTitle("Now playing")
+                .setDescription("[" + track.getInfo().title + "](" + track.getInfo().uri + ")")
+                .setColor(Color.GREEN)
+                .build()
+        );
     }
 
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if (COUNT >= 1) {
             COUNT = 0;
-            event.getChannel().sendMessageEmbeds(
-                    new EmbedBuilder()
-                        .setDescription("Track failed to start.")
-                        .build()
-            ).queue();
+            EmbedMessageSender.sendEmbedToChannel(
+                event.getChannel(),
+                new EmbedBuilder()
+                    .setDescription("Track failed to start.")
+                    .build()
+            );
             return;
         }
         player.startTrack(track.makeClone(), false);

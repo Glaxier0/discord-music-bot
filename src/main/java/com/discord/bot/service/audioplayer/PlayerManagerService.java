@@ -1,20 +1,20 @@
 package com.discord.bot.service.audioplayer;
 
+import com.discord.bot.audioplayer.AudioLoadResultHandler.MultipleAudioLoadResultHandler;
+import com.discord.bot.audioplayer.AudioLoadResultHandler.SingleAudioLoadResultHandler;
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
+import com.discord.bot.utils.EmbedMessageSender;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -42,59 +42,41 @@ public class PlayerManagerService {
 
     public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
-        return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
-
-            guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
-
-            return guildMusicManager;
-        });
+        return this.musicManagers.computeIfAbsent(
+            guild.getIdLong(),
+            (guildId) -> {
+                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
+    
+                guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
+    
+                return guildMusicManager;
+            }
+        );
     }
 
     public void loadAndPlay(SlashCommandInteractionEvent event, MusicPojo musicPojo) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
-            @Override
-            public void trackLoaded(AudioTrack track) {
-                embedBuilder.clear();
-                event.replyEmbeds(embedBuilder.setDescription("Song added to queue: " + track.getInfo().title
-                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1)).setColor(Color.GREEN).build()).queue();
-                musicManager.scheduler.setEvent(event);
-                musicManager.scheduler.queue(track);
-                String title = musicPojo.getTitle();
-                cacheTrack(track, title);
-            }
-
-            @Override
-            public void playlistLoaded(AudioPlaylist playlist) {
-                List<AudioTrack> tracks = playlist.getTracks();
-
-                for (AudioTrack track : tracks) {
-                    musicManager.scheduler.queue(track);
-                }
-                event.replyEmbeds(new EmbedBuilder().setDescription(tracks.size() + " song added to queue.")
-                        .setColor(Color.GREEN).build()).queue();
-            }
-
-            @Override
-            public void noMatches() {
-                //
-            }
-
-            @Override
-            public void loadFailed(FriendlyException exception) {
-                //
-            }
-        });
+        AudioLoadResultHandler resultHandler = new SingleAudioLoadResultHandler(musicManager, event, musicPojo, trackService);
+        this.audioPlayerManager.loadItemOrdered(
+                musicManager,
+                musicPojo.getYoutubeUri(),
+                resultHandler
+        );
     }
     @Async
     public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         musicManager.scheduler.setEvent(event);
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        event.replyEmbeds(embedBuilder.setDescription("Reading spotify playlist.")
-                .setColor(Color.GREEN).build()).queue();
+
+        EmbedMessageSender.sendReplyEmbed(
+            event,
+            new EmbedBuilder()
+                .setDescription("Reading spotify playlist.")
+                .setColor(Color.GREEN)
+                .build()
+        );
+
         int errorCounter = 0;
         for (MusicPojo musicPojo : musicPojos) {
             musicPojo.setYoutubeUri(restService.getYoutubeLink(musicPojo).getYoutubeUri());
@@ -102,49 +84,26 @@ public class PlayerManagerService {
                 errorCounter++;
                 continue;
             }
-            this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
-                @Override
-                public void trackLoaded(AudioTrack track) {
-                    musicManager.scheduler.queue(track);
-                    String title = musicPojo.getTitle();
-                    cacheTrack(track, title);
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist playlist) {
-                    //
-                }
-
-                @Override
-                public void noMatches() {
-                    //
-                }
-
-                @Override
-                public void loadFailed(FriendlyException exception) {
-                    //
-                }
-            });
+            
+            this.audioPlayerManager.loadItemOrdered(
+                musicManager,
+                musicPojo.getYoutubeUri(),
+                new MultipleAudioLoadResultHandler(musicManager, musicPojo, trackService)
+            );
         }
         if (errorCounter > 0) {
-            apiLimitExceeded(event.getChannel());
+            EmbedMessageSender.sendEmbedToChannel(
+                    event.getChannel(),
+                new EmbedBuilder()
+                    .setDescription("Youtube quota has exceeded. " + "Please use youtube links to play music for today.")
+                    .build()
+            );
         }
-        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
-                .build()).queue();
-    }
-
-    private void cacheTrack(AudioTrack track, String title) {
-        if (title != null) {
-            MusicData musicData = new MusicData(title, track.getInfo().uri);
-            MusicData redisMusicData = trackService.findFirst1ByTitle(musicData.getTitle());
-            if (redisMusicData == null) {
-                trackService.save(musicData);
-            }
-        }
-    }
-
-    private void apiLimitExceeded(MessageChannel channel) {
-        channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
-                "Please use youtube links to play music for today.").build()).queue();
+        EmbedMessageSender.sendEmbedToChannel(
+            event.getChannel(),
+            new EmbedBuilder()
+                .setDescription(musicPojos.size() - errorCounter + " tracks queued.")
+                .build()
+        );
     }
 }

@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class MusicHelpCommand implements ISlashCommand {
-    MusicCommandUtils utils; //? 사용되고 있는가?
+    MusicCommandUtils utils;
 
     public MusicHelpCommand(MusicCommandUtils utils) {
         this.utils = utils;

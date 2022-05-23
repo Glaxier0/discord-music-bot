@@ -1,5 +1,8 @@
 package com.discord.bot.commands.musiccommands;
 
+import com.discord.bot.audioplayer.GuildMusicManager;
+import com.discord.bot.service.audioplayer.PlayerManagerService;
+import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -23,4 +26,17 @@ public class MusicCommandUtils {
     public boolean isUserInVoiceChannel(SlashCommandInteractionEvent event) {
         return event.getMember().getVoiceState().inAudioChannel();
     }
+
+    public void moveBotToUserChannel(SlashCommandInteractionEvent event, PlayerManagerService playerManagerService) {
+        AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
+        AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
+        GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+        if (musicManager.scheduler.repeating) {
+            musicManager.scheduler.repeating = false;
+        }
+        musicManager.scheduler.queue.clear();
+        event.getGuild().getAudioManager().openAudioConnection(userChannel);
+        botChannel = userChannel;
+    }
+
 }

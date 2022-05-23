@@ -18,19 +18,12 @@ public class QueueCommand extends MusicPlayerCommand {
         this.utils = utils;
     }
 
-    @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
 
+    @Override
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
         BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
         int trackCount = Math.min(queue.size(), 20);
         List<AudioTrack> trackList = new ArrayList<>(queue);
-
-        if (queue.isEmpty()) {
-            embedBuilder.setDescription("The queue is currently empty").setColor(Color.RED);
-            event.replyEmbeds(embedBuilder.build()).queue();
-            return;
-        }
 
         embedBuilder.setTitle("Current Queue:");
         for (int i = 0; i < trackCount; i++) {
@@ -44,5 +37,16 @@ public class QueueCommand extends MusicPlayerCommand {
         }
 
         event.replyEmbeds(embedBuilder.build()).queue();
+    }
+
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;;
+        return !queue.isEmpty();
+    }
+
+    @Override
+    String getFailDescription() {
+        return "The queue is currently empty";
     }
 }

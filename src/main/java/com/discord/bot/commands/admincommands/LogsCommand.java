@@ -6,10 +6,8 @@ import java.io.File;
 
 public class LogsCommand extends AdminCommand {
     @Override
-    public void execute(SlashCommandInteractionEvent event) {
-        if (event.getUser().getId().equals(ADMIN_ID)) {
-            File logs = new File("logs.log");
-            event.replyFile(logs).queue();
-        }
+    void operate(SlashCommandInteractionEvent event) {
+        File logs = new File("logs.log");
+        event.replyFile(logs).queue();
     }
 }

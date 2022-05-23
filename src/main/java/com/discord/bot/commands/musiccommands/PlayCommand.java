@@ -8,16 +8,15 @@ import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PlayCommand extends MusicPlayerCommand {
     private TrackService trackService;
     private RestService restService;
+    private String failDescription;
 
     public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService, MusicCommandUtils utils) {
         this.restService = restService;
@@ -28,47 +27,64 @@ public class PlayCommand extends MusicPlayerCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
-        playMusic(event, musicPojos);
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+
+        if (isValidState(event)) {
+            operate(event, embedBuilder);
+        } else {
+            event.replyEmbeds(embedBuilder.setDescription("Please be in same channel with bot.")
+                    .build()).queue();
+        }
     }
 
-    private void playMusic(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
+    @Override
+    void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
+        String query = event.getOption("query").getAsString().trim();
+        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
+        if (musicPojos.size() == 1) {
+            if (musicPojos.get(0).getYoutubeUri() == null) {
+                musicPojos.set(0, restService.getYoutubeLink(musicPojos.get(0)));
+            }
+            playerManagerService.loadAndPlay(event, musicPojos.get(0));
+        } else {
+            playerManagerService.loadMultipleAndPlay(event, musicPojos);
+        }
+    }
+
+    @Override
+    boolean isValidState(SlashCommandInteractionEvent event) {
+        if(!utils.isUserInVoiceChannel(event)){
+            failDescription = "Please join to a voice channel.";
+            return false;
+        }
+        String query = event.getOption("query").getAsString().trim();
+        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
+        if(musicPojos.size() == 0){
+            failDescription = "No tracks found.";
+            return false;
+        }
         AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
         AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-
-        if (utils.isUserInVoiceChannel(event)) {
-            int trackSize = musicPojos.size();
-            if (trackSize != 0) {
-                if (utils.isBotInVoiceChannel(event) == false) {
-                    GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-                    if (musicManager.scheduler.repeating) {
-                        musicManager.scheduler.repeating = false;
-                    }
-                    musicManager.scheduler.queue.clear();
-                    event.getGuild().getAudioManager().openAudioConnection(userChannel);
-                    botChannel = userChannel;
-                }
-                if (botChannel.equals(userChannel)) {
-                    if (trackSize == 1) {
-                        if (musicPojos.get(0).getYoutubeUri() == null) {
-                            musicPojos.set(0, restService.getYoutubeLink(musicPojos.get(0)));
-                        }
-                        playerManagerService.loadAndPlay(event, musicPojos.get(0));
-                    } else {
-                        playerManagerService.loadMultipleAndPlay(event, musicPojos);
-                    }
-                } else {
-                    event.replyEmbeds(new EmbedBuilder().setDescription("Please be in same channel with bot.")
-                            .build()).queue();
-                }
-            } else {
-                event.replyEmbeds(new EmbedBuilder().setDescription("No tracks found.")
-                        .setColor(Color.RED).build()).queue();
+        if (utils.isBotInVoiceChannel(event) == false) {
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+            if (musicManager.scheduler.repeating) {
+                musicManager.scheduler.repeating = false;
             }
-        } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please join to a voice channel.").build()).queue();
+            musicManager.scheduler.queue.clear();
+            event.getGuild().getAudioManager().openAudioConnection(userChannel);
+            botChannel = userChannel;
         }
+
+        if (!botChannel.equals(userChannel)) {
+            failDescription = "Please be in same channel with bot.";
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    String getFailDescription() {
+        return failDescription;
     }
 
 }
