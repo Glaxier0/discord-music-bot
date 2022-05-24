@@ -32,7 +32,7 @@ public class SpotifyRestService {
     private final String PLAYLIST_URL = "https://open.spotify.com/playlist/";
     private final String TRACK_URL = "https://open.spotify.com/track/";
     private final String API_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
-    
+
     private final String API_SINGLE_TRACK_URL = "https://api.spotify.com/v1/tracks/";
     private final String API_TRACK_URL = "/tracks?fields=items(track(name,artists(name)))";
     public SpotifyRestService(RestTemplate restTemplate, TrackService trackService) {
