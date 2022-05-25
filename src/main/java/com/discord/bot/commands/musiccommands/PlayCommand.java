@@ -3,6 +3,7 @@ package com.discord.bot.commands.musiccommands;
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.loader.MusicLoader;
+import com.discord.bot.loader.MusicLoaderManager;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -40,11 +41,11 @@ public class PlayCommand extends MusicPlayerCommand {
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
+        List<MusicPojo> musicPojos = new MusicLoaderManager().loadMusicUsingQuery(restService, query, event);
         if (musicPojos.size() == 1) {
-            if (musicPojos.get(0).getYoutubeUri() == null) {
-                musicPojos.set(0, restService.getYoutubeLink(musicPojos.get(0)));
-            }
+            //if (musicPojos.get(0).getYoutubeUri() == null) {
+            //    musicPojos.set(0, restService.getYoutubeLink(musicPojos.get(0)));
+            //}
             playerManagerService.loadAndPlay(event, musicPojos.get(0));
         } else {
             playerManagerService.loadMultipleAndPlay(event, musicPojos);
@@ -58,7 +59,7 @@ public class PlayCommand extends MusicPlayerCommand {
             return false;
         }
         String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new MusicLoader().loadMusicUsingQuery(restService, query, event);
+        List<MusicPojo> musicPojos = new MusicLoaderManager().loadMusicUsingQuery(restService, query, event);
         if(musicPojos.size() == 0){
             failDescription = "No tracks found.";
             return false;
