@@ -21,7 +21,8 @@ public class PauseCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        //utils.setStrategy(new isBotAndUserInSameChannel());
+        return utils.isValid(event);
     }
 
     @Override

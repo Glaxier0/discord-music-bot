@@ -26,7 +26,7 @@ public class LeaveCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        return utils.isValid(event);
     }
 
     @Override

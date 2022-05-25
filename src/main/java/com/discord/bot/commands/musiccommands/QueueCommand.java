@@ -41,7 +41,7 @@ public class QueueCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;;
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
         return !queue.isEmpty();
     }
 

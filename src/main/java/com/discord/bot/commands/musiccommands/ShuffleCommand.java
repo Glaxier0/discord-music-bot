@@ -33,7 +33,7 @@ public class ShuffleCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        return utils.isValid(event);
     }
 
     @Override

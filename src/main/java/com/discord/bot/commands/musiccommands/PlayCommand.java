@@ -1,6 +1,8 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
+import com.discord.bot.commands.musiccommands.ChannelValid.IsUserInVoiceChannel;
+import com.discord.bot.commands.musiccommands.ChannelValid.isBotInVoiceChannel;
 import com.discord.bot.entity.pojo.MusicPojo;
 import com.discord.bot.loader.MusicLoader;
 import com.discord.bot.service.RestService;
@@ -10,7 +12,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.AudioChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-import java.awt.*;
 import java.util.List;
 
 public class PlayCommand extends MusicPlayerCommand {
@@ -53,7 +54,8 @@ public class PlayCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        if(!utils.isUserInVoiceChannel(event)){
+        utils.setStrategy(new IsUserInVoiceChannel());
+        if(!utils.isValid(event)){
             failDescription = "Please join to a voice channel.";
             return false;
         }
@@ -65,7 +67,8 @@ public class PlayCommand extends MusicPlayerCommand {
         }
         AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
         AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-        if (utils.isBotInVoiceChannel(event) == false) {
+        utils.setStrategy(new isBotInVoiceChannel());
+        if (utils.isValid(event) == false) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             if (musicManager.scheduler.repeating) {
                 musicManager.scheduler.repeating = false;

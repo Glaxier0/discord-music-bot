@@ -1,13 +1,20 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.service.audioplayer.PlayerManagerService;
-import net.dv8tion.jda.api.entities.AudioChannel;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
+import com.discord.bot.commands.musiccommands.ChannelValid.ValidStrategy;
+import com.discord.bot.commands.musiccommands.ChannelValid.isBotAndUserInSameChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class MusicCommandUtils {
-    public boolean isBotAndUserInSameChannel(SlashCommandInteractionEvent event) {
+    private ValidStrategy validStrategy = new isBotAndUserInSameChannel();
+    /*여기서부터 시작*/
+    public void setStrategy(){this.validStrategy = new isBotAndUserInSameChannel();}
+    public void setStrategy(ValidStrategy validStrategy){
+        this.validStrategy = validStrategy;
+    }
+    public boolean isValid(SlashCommandInteractionEvent event){
+        return validStrategy.isValid(event);
+    }
+    /*public boolean isBotAndUserInSameChannel(SlashCommandInteractionEvent event) {
         if (!isBotInVoiceChannel(event)) {
             return false;
         }
@@ -37,6 +44,6 @@ public class MusicCommandUtils {
         musicManager.scheduler.queue.clear();
         event.getGuild().getAudioManager().openAudioConnection(userChannel);
         botChannel = userChannel;
-    }
+    }*/
 
 }
