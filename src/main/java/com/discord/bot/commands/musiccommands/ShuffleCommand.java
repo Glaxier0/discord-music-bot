@@ -1,6 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
+import com.discord.bot.commands.musiccommands.Fails.ChannelFailStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -16,6 +17,7 @@ public class ShuffleCommand extends MusicPlayerCommand {
     public ShuffleCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
         this.playerManagerService = playerManagerService;
         this.utils = utils;
+        this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
     @Override
@@ -34,11 +36,6 @@ public class ShuffleCommand extends MusicPlayerCommand {
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
         return utils.isBotAndUserInSameChannel(event);
-    }
-
-    @Override
-    String getFailDescription() {
-        return "Please be in a same voice channel as bot.";
     }
 
     private void ShuffleCollection(GuildMusicManager musicManager, List<AudioTrack> trackList) {
