@@ -1,6 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.commands.ISlashCommand;
+import com.discord.bot.commands.musiccommands.Fails.ChannelFailStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -13,6 +14,7 @@ public class LoopCommand extends MusicPlayerCommand {
     public LoopCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
         this.playerManagerService = playerManagerService;
         this.utils = utils;
+        this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
     @Override
@@ -30,10 +32,4 @@ public class LoopCommand extends MusicPlayerCommand {
     boolean isValidState(SlashCommandInteractionEvent event) {
         return utils.isValid(event);
     }
-
-    @Override
-    String getFailDescription() {
-        return "Please be in a same voice channel as bot.";
-    }
-
 }

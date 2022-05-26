@@ -9,6 +9,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class MusicLoader {
-    protected abstract List<MusicPojo> getMusicPojos(RestService restService, String query, SlashCommandInteractionEvent event);
+public class MusicLoaderManager {
+    public List<MusicPojo> loadMusicUsingQuery(RestService restService, String query, SlashCommandInteractionEvent event) {
+        MusicLoader musicLoader = MusicLoaderFactory.createMusicLoader(query);
+        return musicLoader.getMusicPojos(restService, query, event);
+    }
+
 }
