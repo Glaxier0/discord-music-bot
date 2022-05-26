@@ -8,9 +8,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.awt.*;
 
 public class PauseCommand extends MusicPlayerCommand {
-    public PauseCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public PauseCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
         this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
@@ -24,6 +24,6 @@ public class PauseCommand extends MusicPlayerCommand {
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
         //utils.setStrategy(new isBotAndUserInSameChannel());
-        return utils.isValid(event);
+        return channelValidation.isValid(event);
     }
 }

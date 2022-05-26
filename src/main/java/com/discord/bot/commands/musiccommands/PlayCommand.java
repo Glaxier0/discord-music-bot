@@ -2,9 +2,8 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.musiccommands.ChannelValid.IsUserInVoiceChannel;
-import com.discord.bot.commands.musiccommands.ChannelValid.isBotInVoiceChannel;
+import com.discord.bot.commands.musiccommands.ChannelValid.IsBotInVoiceChannel;
 import com.discord.bot.entity.pojo.MusicPojo;
-import com.discord.bot.loader.MusicLoader;
 import com.discord.bot.loader.MusicLoaderManager;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
@@ -20,11 +19,11 @@ public class PlayCommand extends MusicPlayerCommand {
     private RestService restService;
     private String failDescription;
 
-    public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService, MusicCommandUtils utils) {
+    public PlayCommand(RestService restService, PlayerManagerService playerManagerService, TrackService trackService, ChannelValidation channelValidation) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.trackService = trackService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
     }
 
     @Override
@@ -55,8 +54,8 @@ public class PlayCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        utils.setStrategy(new IsUserInVoiceChannel());
-        if(!utils.isValid(event)){
+        channelValidation.setStrategy(new IsUserInVoiceChannel());
+        if(!channelValidation.isValid(event)){
             failDescription = "Please join to a voice channel.";
             return false;
         }
@@ -68,8 +67,8 @@ public class PlayCommand extends MusicPlayerCommand {
         }
         AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
         AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
-        utils.setStrategy(new isBotInVoiceChannel());
-        if (utils.isValid(event) == false) {
+        channelValidation.setStrategy(new IsBotInVoiceChannel());
+        if (channelValidation.isValid(event) == false) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             if (musicManager.scheduler.repeating) {
                 musicManager.scheduler.repeating = false;
@@ -78,7 +77,7 @@ public class PlayCommand extends MusicPlayerCommand {
             event.getGuild().getAudioManager().openAudioConnection(userChannel);
             botChannel = userChannel;
         }
-
+        channelValidation.setStrategy();
         if (!botChannel.equals(userChannel)) {
             failDescription = "Please be in same channel with bot.";
             return false;

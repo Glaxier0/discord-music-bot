@@ -5,10 +5,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class MusicHelpCommand implements ISlashCommand {
-    MusicCommandUtils utils;
+    ChannelValidation channelValidation;
 
-    public MusicHelpCommand(MusicCommandUtils utils) {
-        this.utils = utils;
+    public MusicHelpCommand(ChannelValidation channelValidation) {
+        this.channelValidation = channelValidation;
     }
 
     @Override

@@ -9,9 +9,9 @@ import java.awt.*;
 
 public class ResumeCommand extends MusicPlayerCommand {
 
-    public ResumeCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public ResumeCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
         this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
@@ -24,6 +24,6 @@ public class ResumeCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isValid(event);
+        return channelValidation.isValid(event);
     }
 }

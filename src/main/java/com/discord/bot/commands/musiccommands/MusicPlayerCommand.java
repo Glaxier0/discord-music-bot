@@ -9,7 +9,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.awt.*;
 
 public abstract class MusicPlayerCommand implements ISlashCommand {
-    MusicCommandUtils utils;
+    ChannelValidation channelValidation;
     PlayerManagerService playerManagerService;
     FailDescriptionStrategy failDescriptionStrategy;
 

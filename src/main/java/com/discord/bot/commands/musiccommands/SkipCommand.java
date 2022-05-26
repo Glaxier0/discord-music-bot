@@ -8,9 +8,9 @@ import java.awt.*;
 
 public class SkipCommand extends MusicPlayerCommand {
 
-    public SkipCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public SkipCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
     }
 
     @Override
@@ -21,7 +21,7 @@ public class SkipCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isValid(event);
+        return channelValidation.isValid(event);
     }
 
     @Override
