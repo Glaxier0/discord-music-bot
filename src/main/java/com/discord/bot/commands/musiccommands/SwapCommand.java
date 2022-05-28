@@ -12,9 +12,9 @@ import java.util.List;
 
 public class SwapCommand extends MusicPlayerCommand {
 
-    public SwapCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public SwapCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
     }
 
     @Override
@@ -35,7 +35,7 @@ public class SwapCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        return channelValidation.isValid(event);
     }
 
     @Override

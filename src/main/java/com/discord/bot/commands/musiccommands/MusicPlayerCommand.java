@@ -1,6 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.commands.ISlashCommand;
+import com.discord.bot.commands.musiccommands.Fails.FailDescriptionStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -8,8 +9,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.awt.*;
 
 public abstract class MusicPlayerCommand implements ISlashCommand {
-    MusicCommandUtils utils;
+    ChannelValidation channelValidation;
     PlayerManagerService playerManagerService;
+    FailDescriptionStrategy failDescriptionStrategy;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
@@ -24,5 +26,7 @@ public abstract class MusicPlayerCommand implements ISlashCommand {
 
     abstract void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder);
     abstract boolean isValidState(SlashCommandInteractionEvent event);
-    abstract String getFailDescription();
+    String getFailDescription() {
+        return failDescriptionStrategy.getFailDescription();
+    }
 }
