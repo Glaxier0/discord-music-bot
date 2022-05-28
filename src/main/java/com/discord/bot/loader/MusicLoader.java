@@ -13,10 +13,10 @@ public abstract class MusicLoader {
     public List<MusicPojo> getMusicPojos(RestService restService, String query, SlashCommandInteractionEvent event) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         musicPojos = getMusicInfo(restService, query, event);
-        musicPojos = transformMusicPojo(musicPojos);
+        musicPojos = transformMusicPojo(restService, event, musicPojos);
         return musicPojos;
     }
 
     protected abstract List<MusicPojo> getMusicInfo(RestService restService, String query, SlashCommandInteractionEvent event);
-    protected abstract List<MusicPojo> transformMusicPojo(List<MusicPojo> musicPojos);
+    protected abstract List<MusicPojo> transformMusicPojo(RestService restService, SlashCommandInteractionEvent event, List<MusicPojo> musicPojos);
 }

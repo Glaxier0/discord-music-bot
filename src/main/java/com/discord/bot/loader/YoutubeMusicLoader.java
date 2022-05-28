@@ -31,7 +31,7 @@ public class YoutubeMusicLoader extends MusicLoader{
 
         return musicPojos;
     }
-    protected List<MusicPojo> transformMusicPojo(List<MusicPojo> musicPojos) {
+    protected List<MusicPojo> transformMusicPojo(RestService restService, SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         return musicPojos;
     }
     private void apiLimitExceeded(MessageChannel channel) {
