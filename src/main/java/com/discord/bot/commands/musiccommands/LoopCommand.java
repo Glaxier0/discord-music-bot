@@ -1,6 +1,5 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.commands.musiccommands.Fails.ChannelFailStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -9,11 +8,11 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.awt.*;
 
 public class LoopCommand extends MusicPlayerCommand {
-    MusicCommandUtils utils;
+    ChannelValidation utils;
     PlayerManagerService playerManagerService;
-    public LoopCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public LoopCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.utils = channelValidation;
         this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
@@ -30,6 +29,6 @@ public class LoopCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        return utils.isValid(event);
     }
 }

@@ -14,9 +14,9 @@ import java.util.List;
 
 public class ShuffleCommand extends MusicPlayerCommand {
     
-    public ShuffleCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public ShuffleCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
         this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
@@ -35,7 +35,7 @@ public class ShuffleCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
+        return channelValidation.isValid(event);
     }
 
     private void ShuffleCollection(GuildMusicManager musicManager, List<AudioTrack> trackList) {
