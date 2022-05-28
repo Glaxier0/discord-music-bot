@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class YoutubeMusicLoader extends MusicLoader{
-    public List<MusicPojo> getMusicPojos(RestService restService, String query, SlashCommandInteractionEvent event) {
+    protected List<MusicPojo> getMusicInfo(RestService restService, String query, SlashCommandInteractionEvent event) {
         List<MusicPojo> musicPojos = new ArrayList<>();
 
         final boolean isYoutubeUrl = query.contains("https://www.youtube.com/watch?v=");
@@ -31,7 +31,9 @@ public class YoutubeMusicLoader extends MusicLoader{
 
         return musicPojos;
     }
-
+    protected List<MusicPojo> transformMusicPojo(List<MusicPojo> musicPojos) {
+        return musicPojos;
+    }
     private void apiLimitExceeded(MessageChannel channel) {
         channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
                 "Please use youtube links to play music for today.").build()).queue();
