@@ -9,9 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpotifyMusicLoader extends MusicLoader {
+    @Override
     protected List<MusicPojo> getMusicInfo(RestService restService, String query, SlashCommandInteractionEvent event) {
         return restService.getSpotifyMusicName(query);
     }
+    @Override
     protected List<MusicPojo> transformMusicPojo(RestService restService, SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         for (int i = 0; i < musicPojos.size(); i++) {
             musicPojos.set(i, restService.getYoutubeLink(musicPojos.get(i)));
