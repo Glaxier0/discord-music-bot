@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class YoutubeMusicLoader extends MusicLoader{
+    @Override
     protected List<MusicPojo> getMusicInfo(RestService restService, String query, SlashCommandInteractionEvent event) {
         List<MusicPojo> musicPojos = new ArrayList<>();
 
@@ -31,6 +32,7 @@ public class YoutubeMusicLoader extends MusicLoader{
 
         return musicPojos;
     }
+    @Override
     protected List<MusicPojo> transformMusicPojo(RestService restService, SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         return musicPojos;
     }
