@@ -17,14 +17,14 @@ public class CommandManager extends ListenerAdapter {
 
     RestService restService;
     PlayerManagerService playerManagerService;
-    MusicCommandUtils musicCommandUtils;
+    ChannelValidation musicCommandUtils;
     TrackService trackService;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService, TrackService trackService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
-        this.musicCommandUtils = new MusicCommandUtils();
+        this.musicCommandUtils = new ChannelValidation();
         this.trackService = trackService;
         commandMapper();
     }

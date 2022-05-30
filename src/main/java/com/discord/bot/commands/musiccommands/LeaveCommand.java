@@ -1,17 +1,17 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
+import com.discord.bot.commands.musiccommands.Fails.ChannelFailStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.managers.AudioManager;
 
-import java.awt.*;
-
 public class LeaveCommand extends MusicPlayerCommand {
-    public LeaveCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public LeaveCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
+        this.failDescriptionStrategy = new ChannelFailStrategy();
     }
 
     @Override
@@ -26,11 +26,6 @@ public class LeaveCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        return utils.isBotAndUserInSameChannel(event);
-    }
-
-    @Override
-    String getFailDescription() {
-        return "Please be in a same voice channel as bot.";
+        return channelValidation.isValid(event);
     }
 }

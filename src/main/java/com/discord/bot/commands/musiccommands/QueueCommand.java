@@ -1,21 +1,22 @@
 package com.discord.bot.commands.musiccommands;
 
+import com.discord.bot.commands.musiccommands.Fails.FailQueueEmptyStrategy;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class QueueCommand extends MusicPlayerCommand {
 
-    public QueueCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
+    public QueueCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
-        this.utils = utils;
+        this.channelValidation = channelValidation;
+        this.failDescriptionStrategy = new FailQueueEmptyStrategy();
     }
 
 
@@ -41,12 +42,7 @@ public class QueueCommand extends MusicPlayerCommand {
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;;
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
         return !queue.isEmpty();
-    }
-
-    @Override
-    String getFailDescription() {
-        return "The queue is currently empty";
     }
 }
