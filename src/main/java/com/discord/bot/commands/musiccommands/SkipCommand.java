@@ -15,10 +15,9 @@ public class SkipCommand extends MusicPlayerCommand {
 
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
-        playerManagerService.getMusicManager(event).scheduler.nextTrack();
-        event.replyEmbeds(embedBuilder.setDescription("Song skipped").setColor(Color.GREEN).build()).queue();
+        playerManagerService.skipToNextTrack(event, embedBuilder);
     }
-
+    
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
         return channelValidation.isValid(event);

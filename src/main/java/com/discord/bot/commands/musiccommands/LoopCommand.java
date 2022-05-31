@@ -5,8 +5,6 @@ import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-import java.awt.*;
-
 public class LoopCommand extends MusicPlayerCommand {
     ChannelValidation utils;
     PlayerManagerService playerManagerService;
@@ -18,13 +16,7 @@ public class LoopCommand extends MusicPlayerCommand {
 
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
-        boolean repeat = playerManagerService.getMusicManager(event).scheduler.repeating;
-        playerManagerService.getMusicManager(event).scheduler.repeating = !repeat;
-        if (!repeat) {
-            event.replyEmbeds(embedBuilder.setDescription(":white_check_mark: Track loop enabled.").setColor(Color.GREEN).build()).queue();
-        } else {
-            event.replyEmbeds(embedBuilder.setDescription(":x: Track loop disabled.").setColor(Color.RED).build()).queue();
-        }
+        playerManagerService.toggleLoopCurrentTrack(event, embedBuilder);
     }
 
     @Override

@@ -5,8 +5,6 @@ import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-import java.awt.*;
-
 public class PauseCommand extends MusicPlayerCommand {
     public PauseCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
         this.playerManagerService = playerManagerService;
@@ -16,10 +14,10 @@ public class PauseCommand extends MusicPlayerCommand {
 
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
-        playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
-        event.replyEmbeds(embedBuilder.setDescription("Song paused")
-                .setColor(Color.GREEN).build()).queue();
+        playerManagerService.pauseTrack(event, embedBuilder);
     }
+
+    
 
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
