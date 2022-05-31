@@ -5,8 +5,6 @@ import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-import java.awt.*;
-
 public class ResumeCommand extends MusicPlayerCommand {
 
     public ResumeCommand(PlayerManagerService playerManagerService, ChannelValidation channelValidation) {
@@ -17,11 +15,9 @@ public class ResumeCommand extends MusicPlayerCommand {
 
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
-        playerManagerService.getMusicManager(event).audioPlayer.setPaused(false);
-        event.replyEmbeds(embedBuilder.setDescription("Song resumed")
-                .setColor(Color.GREEN).build()).queue();
+        playerManagerService.resumeTrack(event, embedBuilder);
     }
-
+    
     @Override
     boolean isValidState(SlashCommandInteractionEvent event) {
         return channelValidation.isValid(event);

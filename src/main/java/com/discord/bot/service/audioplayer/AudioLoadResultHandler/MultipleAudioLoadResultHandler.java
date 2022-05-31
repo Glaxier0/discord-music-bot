@@ -1,4 +1,4 @@
-package com.discord.bot.audioplayer.AudioLoadResultHandler;
+package com.discord.bot.service.audioplayer.AudioLoadResultHandler;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.entity.pojo.MusicPojo;

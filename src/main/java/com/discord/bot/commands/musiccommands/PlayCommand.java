@@ -1,6 +1,5 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.musiccommands.ChannelValid.IsUserInVoiceChannel;
 import com.discord.bot.commands.musiccommands.ChannelValid.IsBotInVoiceChannel;
 import com.discord.bot.entity.pojo.MusicPojo;
@@ -40,16 +39,7 @@ public class PlayCommand extends MusicPlayerCommand {
 
     @Override
     void operate(SlashCommandInteractionEvent event, EmbedBuilder embedBuilder) {
-        String query = event.getOption("query").getAsString().trim();
-        List<MusicPojo> musicPojos = new MusicLoaderManager().loadMusicUsingQuery(restService, query, event);
-        if (musicPojos.size() == 1) {
-            //if (musicPojos.get(0).getYoutubeUri() == null) {
-            //    musicPojos.set(0, restService.getYoutubeLink(musicPojos.get(0)));
-            //}
-            playerManagerService.loadAndPlay(event, musicPojos.get(0));
-        } else {
-            playerManagerService.loadMultipleAndPlay(event, musicPojos);
-        }
+        playerManagerService.playQueriedTrack(event);
     }
 
     @Override
@@ -68,12 +58,9 @@ public class PlayCommand extends MusicPlayerCommand {
         AudioChannel userChannel = event.getMember().getVoiceState().getChannel();
         AudioChannel botChannel = event.getGuild().getSelfMember().getVoiceState().getChannel();
         channelValidation.setStrategy(new IsBotInVoiceChannel());
+        
         if (channelValidation.isValid(event) == false) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-            if (musicManager.scheduler.repeating) {
-                musicManager.scheduler.repeating = false;
-            }
-            musicManager.scheduler.queue.clear();
+            playerManagerService.cleanUpCurrentTrackSchedule(event);
             event.getGuild().getAudioManager().openAudioConnection(userChannel);
             botChannel = userChannel;
         }
@@ -84,6 +71,8 @@ public class PlayCommand extends MusicPlayerCommand {
         }
         return true;
     }
+
+    
 
     @Override
     String getFailDescription() {
