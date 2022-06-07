@@ -43,4 +43,31 @@ public class RestServiceTest {
         assertEquals( musicName, result.getTitle());
         assertEquals( musicNameUrl, result.getYoutubeUri());
     }
+
+    /**
+     * Purpose: Verify that Redis DB interacts well with YoutubeRestService
+     * Input: MusicName String ("viva la vida")
+     * Expected: Object of MusicPojo
+     *   MusicPojo {
+     *      String title = "viva la vida";
+     *      String youtubeUri = musicNameUrl;
+     *   }
+     */
+    @Test
+    public void YoutubeRestSerivceTrackServiceTest() {
+        String musicCacheName = "viva la vida";
+        String musicCacheNameUrl = "https://www.youtube.com/watch?v=HosW0gulISQ";
+
+        //Reset DB
+        restService.trackService.deleteAll();
+        //Add MusicPojo in DB that Same as Input
+        restService.trackService.cache(musicCacheName, musicCacheNameUrl);
+        //Get YoutubeUri from Redis DB
+        MusicPojo result = restService.getYoutubeLink(new MusicPojo(musicCacheName, ""));
+
+        assertEquals( musicCacheName, result.getTitle());
+        assertEquals( musicCacheNameUrl, result.getYoutubeUri());
+    }
+
+
 }
