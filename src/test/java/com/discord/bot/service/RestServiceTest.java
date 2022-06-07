@@ -35,6 +35,8 @@ public class RestServiceTest {
      */
     @Test
     public void YoutubeRestServiceTest() {
+        restService.trackService.deleteAll();
+
         String musicName = "viva la vida";
         String musicNameUrl = "https://www.youtube.com/watch?v=HosW0gulISQ";
         MusicPojo pojo = new MusicPojo(musicName, "");
@@ -94,5 +96,33 @@ public class RestServiceTest {
         assertNull(pojo.getYoutubeUri());
     }
 
+    /**
+     * Purpose: Verify SpotifyRestService class load Multiple MusicPojo when give Spotify Playlist Url
+     * Input: Spotify Playlist URL to RestService
+     *  String(Spotify Playlist Url that has three track)
+     *  Track 1 : Daft Punk - Something About Us
+     *  Track 2 : Daft Punk - Harder, Better, Faster, Stronger
+     *  Track 3 : Daft Punk - One More Time
+     * Expected:
+     *  size 3, List<MusicPojo>, three element has MusicPojo like below
+     *  MusicPojo {
+     *      String title = title of Track X;
+     *      String youtubeUri = null;
+     *  }
+     */
+    @Test
+    public void SpotifyRestServicePlaylistTest() {
+        String spotifyPlaylistUrl = "https://open.spotify.com/playlist/4mVGPbV9WiSoogLFfZC7zn";
+        List<MusicPojo> result = restService.getSpotifyMusicName(spotifyPlaylistUrl);
 
+        assertEquals(3, result.size());
+
+        String[] names = {"Daft Punk - Something About Us",
+                          "Daft Punk - Harder, Better, Faster, Stronger",
+                          "Daft Punk - One More Time"};
+        for (int i = 0; i < 3; i++) {
+            assertEquals(names[i], result.get(i).getTitle());
+            assertNull(result.get(i).getYoutubeUri());
+        }
+    }
 }
