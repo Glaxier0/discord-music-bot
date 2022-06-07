@@ -69,5 +69,30 @@ public class RestServiceTest {
         assertEquals( musicCacheNameUrl, result.getYoutubeUri());
     }
 
+    /**
+     * Purpose: Verify SpotifyRestService class generates a MusicPojo List when give Spotify Track Url
+     * Input: Spotify Track URL to RestService
+     *  String(Spotify Track Url)
+     *  Track Title : Daft Punk - Get Lucky (feat. Pharrell Williams & Nile Rodgers) - Radio Edit
+     * Expected:
+     *  size 1, List<MusicPojo>, first element has MusicPojo like below
+     *  MusicPojo {
+     *      String title = "Daft Punk - Get Lucky (feat. Pharrell Williams & Nile Rodgers) - Radio Edit";
+     *      String youtubeUri = null;
+     *  }
+     */
+    @Test
+    public void SpotifyRestServiceTrackTest() {
+        String spotifyTrackUrl = "https://open.spotify.com/track/2Foc5Q5nqNiosCNqttzHof";
+        List<MusicPojo> result = restService.getSpotifyMusicName(spotifyTrackUrl);
+
+        assertEquals( 1, result.size());
+
+        MusicPojo pojo = result.get(0);
+
+        assertEquals("Daft Punk - Get Lucky (feat. Pharrell Williams & Nile Rodgers) - Radio Edit", pojo.getTitle());
+        assertNull(pojo.getYoutubeUri());
+    }
+
 
 }
