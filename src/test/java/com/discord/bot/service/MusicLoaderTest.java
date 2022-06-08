@@ -207,4 +207,20 @@ public class MusicLoaderTest {
         assertEquals("track2URL", result.get(1).getYoutubeUri());
         assertEquals("track3URL", result.get(2).getYoutubeUri());
     }
+
+    /**
+     * Purpose: Verify MusicLoaderManager class generates a list when give Youtube Video Query
+     * Input: youtubeSingleMusicUrl to MusicLoaderManager
+     *  String(youtubeSingleMusicUrl)
+     * Expected:
+     *  size 1, List<MusicPojo>,  first element in this list has same String as youtubeSingleMusicUrl at youtubeUri field
+     */
+    @Test
+    public void MusicLoaderManagerYoutubeTest() {
+        when(restService.getYoutubeLink(any(MusicPojo.class))).thenReturn(new MusicPojo("", youtubeSingleMusicUrl));
+        List<MusicPojo> result = new MusicLoaderManager().loadMusicUsingQuery(restService, youtubeSingleMusicUrl, null);
+
+        assertEquals(1, result.size());
+        assertEquals(youtubeSingleMusicUrl, result.get(0).getYoutubeUri());
+    }
 }
