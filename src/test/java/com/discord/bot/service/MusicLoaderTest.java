@@ -133,4 +133,32 @@ public class MusicLoaderTest {
         assertEquals(1, musicPojos.size());
         assertEquals(musicNameUrl, musicPojos.get(0).getYoutubeUri());
     }
+
+    /**
+     * Purpose: Verify SpotifyMusicLoader class generates a list when give single track Url
+     * Input: SpotifyTrackUrl to SpotifyMusicLoader
+     *  String(SpotifyTrackUrl)
+     * Expected:
+     *  size 1, List<MusicPojo>, list has first element like below
+     *  MusicPojo {
+     *      String title = "musicName";
+     *      String youtubeUri = "trackURL";
+     *  }
+     */
+    @Test
+    public void SpotifyMusicLoaderTrackLoadTest() {
+        List<MusicPojo> spotifyRestReturn = new ArrayList<MusicPojo>();
+        MusicPojo track = new MusicPojo("musicName",null);
+        spotifyRestReturn.add(track);
+
+        when(restService.getSpotifyMusicName(spotifyTrackUrl)).thenReturn(spotifyRestReturn);
+        when(restService.getYoutubeLink(track)).thenReturn(new MusicPojo("musicName", "trackURL"));
+
+        MusicLoader spotifyMusicLoader = MusicLoaderFactory.createMusicLoader(spotifyTrackUrl);
+        List<MusicPojo> result = spotifyMusicLoader.getMusicPojos(restService, spotifyTrackUrl, null);
+
+        assertEquals(1, result.size());
+        assertEquals("musicName", result.get(0).getTitle());
+        assertEquals("trackURL", result.get(0).getYoutubeUri());
+    }
 }
