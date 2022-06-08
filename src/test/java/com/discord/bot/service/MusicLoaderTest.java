@@ -45,7 +45,7 @@ public class MusicLoaderTest {
 
     String youtubeSingleMusicUrl = "https://www.youtube.com/watch?v=em0MknB6wFo";
     String youtubePlaylistUrl = "https://www.youtube.com/watch?v=A2VpR8HahKc&list=PLSdoVPM5WnndSQEXRz704yQkKwx76GvPV";
-    String youtubeErrorUrl = "https://www.youtube.com/watch?v=123";
+    String youtubeErrorUrl = "fakeUrl";
     String spotifyTrackUrl = "https://open.spotify.com/track/2Foc5Q5nqNiosCNqttzHof";
     String spotifyPlaylistUrl = "https://open.spotify.com/playlist/4mVGPbV9WiSoogLFfZC7zn";
     String musicName = "viva la vida";
@@ -132,6 +132,31 @@ public class MusicLoaderTest {
 
         assertEquals(1, musicPojos.size());
         assertEquals(musicNameUrl, musicPojos.get(0).getYoutubeUri());
+    }
+
+    /**
+     * Purpose: Verify YoutubeMusicLoader return empty list when occurred 403 error
+     * Input: fake Url String("fake url")to YoutubeMusicLoader
+     * Expected:
+     *  empty list, List<MusicPojo>
+     *  Verify MessageAction object execute queue() method at least once
+     */
+    @Test
+    public void YoutubeMusic403ErrorTest() {
+        SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
+        MessageChannel channel = mock(MessageChannel.class);
+        MessageAction messageAction = mock(MessageAction.class);
+
+        when(event.getChannel()).thenReturn(channel);
+        when(channel.sendMessageEmbeds(any(MessageEmbed.class))).thenReturn(messageAction);
+        doNothing().when(messageAction).queue();
+
+        when(restService.getYoutubeLink(any(MusicPojo.class))).thenReturn(new MusicPojo("", "403glaxierror"));
+        MusicLoader youtubeSingleLoader = MusicLoaderFactory.createMusicLoader(youtubeErrorUrl);
+        List<MusicPojo> musicPojos = youtubeSingleLoader.getMusicPojos(restService, youtubeErrorUrl, event);
+
+        assertEquals(0, musicPojos.size());
+        verify(messageAction).queue(); //verify semd message to channel
     }
 
     /**
