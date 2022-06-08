@@ -161,4 +161,50 @@ public class MusicLoaderTest {
         assertEquals("musicName", result.get(0).getTitle());
         assertEquals("trackURL", result.get(0).getYoutubeUri());
     }
+
+    /**
+     * Purpose: Verify SpotifyMusicLoader class generates a list when give playlist url
+     * Input: spotifyPlaylistUrl to SpotifyMusicLoader
+     *  String(spotifyPlaylistUrl)
+     * Expected:
+     *  size 3, List<MusicPojo>, list has element like below
+     *  {
+     *      musicPojo("musicName1", "trackURL1"),
+     *      musicPojo("musicName2", "trackURL2"),
+     *      musicPojo("musicName3", "trackURL3"),
+     *  }
+     */
+    @Test
+    public void SpotifyMusicLoaderPlaylistLoadTest() {
+
+        List<MusicPojo> spotifyRestReturn = new ArrayList<MusicPojo>();
+        MusicPojo track1 = new MusicPojo("musicName1",null);
+        MusicPojo track2 = new MusicPojo("musicName2",null);
+        MusicPojo track3 = new MusicPojo("musicName3",null);
+        spotifyRestReturn.add(track1);
+        spotifyRestReturn.add(track2);
+        spotifyRestReturn.add(track3);
+
+        when(restService.getSpotifyMusicName(spotifyPlaylistUrl)).thenReturn(spotifyRestReturn);
+
+        when(restService.getYoutubeLink(track1))
+                .thenReturn(new MusicPojo("musicName1", "track1URL"));
+        when(restService.getYoutubeLink(track2))
+                .thenReturn(new MusicPojo("musicName2", "track2URL"));
+        when(restService.getYoutubeLink(track3))
+                .thenReturn(new MusicPojo("musicName3", "track3URL"));
+
+        MusicLoader spotifyMusicLoader = MusicLoaderFactory.createMusicLoader(spotifyPlaylistUrl);
+        List<MusicPojo> result = spotifyMusicLoader.getMusicPojos(restService, spotifyPlaylistUrl, null);
+
+        assertEquals(3, result.size());
+
+        assertEquals("musicName1", result.get(0).getTitle());
+        assertEquals("musicName2", result.get(1).getTitle());
+        assertEquals("musicName3", result.get(2).getTitle());
+
+        assertEquals("track1URL", result.get(0).getYoutubeUri());
+        assertEquals("track2URL", result.get(1).getYoutubeUri());
+        assertEquals("track3URL", result.get(2).getYoutubeUri());
+    }
 }
