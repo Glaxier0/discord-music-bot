@@ -79,12 +79,12 @@ public class PlayerManagerService {
 
             @Override
             public void noMatches() {
-                //
+
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                //
+                exception.printStackTrace();
             }
         });
     }

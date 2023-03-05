@@ -63,8 +63,8 @@ public class GlaxierBot {
     }
 
     private void ageRestriction() {
-        YoutubeHttpContextFilter.setPSID(PSID);
-        YoutubeHttpContextFilter.setPAPISID(PAPISID);
+//        YoutubeHttpContextFilter.setPSID(PSID);
+//        YoutubeHttpContextFilter.setPAPISID(PAPISID);
     }
 }
 

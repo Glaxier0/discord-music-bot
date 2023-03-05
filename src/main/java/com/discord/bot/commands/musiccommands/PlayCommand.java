@@ -44,9 +44,9 @@ public class PlayCommand implements ISlashCommand {
             if (trackSize != 0) {
                 if (!isBotInVoiceChannel) {
                     GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-                    if (musicManager.scheduler.repeating) {
-                        musicManager.scheduler.repeating = false;
-                    }
+                    musicManager.scheduler.repeating = false;
+                    musicManager.scheduler.player.setPaused(false);
+                    musicManager.scheduler.player.stopTrack();
                     musicManager.scheduler.queue.clear();
                     event.getGuild().getAudioManager().openAudioConnection(userChannel);
                     botChannel = userChannel;

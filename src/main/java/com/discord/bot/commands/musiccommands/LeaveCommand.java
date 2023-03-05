@@ -24,6 +24,8 @@ public class LeaveCommand implements ISlashCommand {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             AudioManager audioManager = event.getGuild().getAudioManager();
 
+            musicManager.scheduler.repeating = false;
+            musicManager.scheduler.player.setPaused(false);
             musicManager.scheduler.player.stopTrack();
             musicManager.scheduler.queue.clear();
             audioManager.closeAudioConnection();
