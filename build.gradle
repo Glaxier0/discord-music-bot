@@ -1,5 +1,5 @@
 plugins {
-	id 'org.springframework.boot' version '2.5.2'
+	id 'org.springframework.boot' version '2.6.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 }
@@ -22,8 +22,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.data:spring-data-redis'
 	implementation 'io.lettuce:lettuce-core:6.1.6.RELEASE'
-	implementation 'com.sedmelluq:lavaplayer-ext-youtube-rotator:0.2.3'
-	implementation 'com.github.walkyst:lavaplayer-fork:1.3.97'
+	implementation 'com.github.walkyst:lavaplayer-fork:1.4.0'
 	implementation 'net.dv8tion:JDA:5.0.0-alpha.9'
 	compileOnly 'org.projectlombok:lombok:1.18.22'
 	annotationProcessor 'org.projectlombok:lombok:1.18.22'
