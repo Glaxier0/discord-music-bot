@@ -14,7 +14,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -79,7 +79,7 @@ public class PlayerManagerService {
 
             @Override
             public void noMatches() {
-
+                System.out.println("No match found");
             }
 
             @Override
@@ -117,12 +117,12 @@ public class PlayerManagerService {
 
                 @Override
                 public void noMatches() {
-                    //
+                    System.out.println("No match found");
                 }
 
                 @Override
                 public void loadFailed(FriendlyException exception) {
-                    //
+                    exception.printStackTrace();
                 }
             });
         }
