@@ -2,6 +2,7 @@ package com.discord.bot.commands.admincommands;
 
 import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.File;
 
@@ -12,7 +13,7 @@ public class LogsCommand implements ISlashCommand {
     public void execute(SlashCommandInteractionEvent event) {
         if (event.getUser().getId().equals(ADMIN)) {
             File logs = new File("logs.log");
-            event.replyFile(logs).queue();
+            event.replyFiles(FileUpload.fromData(logs)).queue();
         }
     }
 }

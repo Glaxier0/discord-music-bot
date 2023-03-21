@@ -3,6 +3,7 @@ package com.discord.bot.commands.admincommands;
 import com.discord.bot.commands.ISlashCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,7 +26,7 @@ public class GuildsCommand implements ISlashCommand {
                 }
 
                 writer.close();
-                event.replyFile(guildsFile).queue();
+                event.replyFiles(FileUpload.fromData(guildsFile)).queue();
                 Thread.sleep(100);
                 guildsFile.delete();
             } catch (IOException | InterruptedException e) {
