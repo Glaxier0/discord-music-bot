@@ -26,6 +26,7 @@ public class JdaCommands {
                                         "Song number in queue to be changed.").setRequired(true)),
                 Commands.slash("shuffle", "Shuffle the queue."),
                 Commands.slash("loop", "Loop the current song."),
+                Commands.slash("nowplaying", "Show the currently playing song."),
                 Commands.slash("mhelp", "Help page for music commands.")
         ).queue();
     }

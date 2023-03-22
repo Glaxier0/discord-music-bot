@@ -47,8 +47,8 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setTitle("Now playing").setDescription("[" + track.getInfo().title
-                + "](" + track.getInfo().uri + ")").setColor(Color.GREEN).build()).queue();
+//        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setTitle("Now playing").setDescription("[" + track.getInfo().title
+//                + "](" + track.getInfo().uri + ")").setColor(Color.GREEN).build()).queue();
     }
 
     @Override
