@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -48,7 +49,13 @@ public class PlayCommand implements ISlashCommand {
                     musicManager.scheduler.player.setPaused(false);
                     musicManager.scheduler.player.stopTrack();
                     musicManager.scheduler.queue.clear();
-                    event.getGuild().getAudioManager().openAudioConnection(userChannel);
+                    try {
+                        event.getGuild().getAudioManager().openAudioConnection(userChannel);
+                    } catch (InsufficientPermissionException exception) {
+                        event.replyEmbeds(new EmbedBuilder().setDescription("Bot does not have permission to join the voice channel.")
+                                        .setColor(Color.RED).build()).queue();
+                        return;
+                    }
                     botChannel = userChannel;
                 }
                 if (botChannel.equals(userChannel)) {
@@ -62,7 +69,7 @@ public class PlayCommand implements ISlashCommand {
                     }
                 } else {
                     event.replyEmbeds(new EmbedBuilder().setDescription("Please be in same channel with bot.")
-                            .build()).queue();
+                            .setColor(Color.RED).build()).queue();
                 }
             } else {
                 event.replyEmbeds(new EmbedBuilder().setDescription("No tracks found.")
