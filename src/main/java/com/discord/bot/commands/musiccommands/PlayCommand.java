@@ -68,7 +68,7 @@ public class PlayCommand implements ISlashCommand {
                         playerManagerService.loadMultipleAndPlay(event, musicPojos);
                     }
                 } else {
-                    event.replyEmbeds(new EmbedBuilder().setDescription("Please be in same channel with bot.")
+                    event.replyEmbeds(new EmbedBuilder().setDescription("Please be in the same voice channel as the bot.")
                             .setColor(Color.RED).build()).queue();
                 }
             } else {
@@ -76,7 +76,8 @@ public class PlayCommand implements ISlashCommand {
                         .setColor(Color.RED).build()).queue();
             }
         } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please join to a voice channel.").build()).queue();
+            event.replyEmbeds(new EmbedBuilder().setDescription("Please join a voice channel.")
+                    .setColor(Color.RED).build()).queue();
         }
     }
 
