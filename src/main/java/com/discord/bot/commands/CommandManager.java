@@ -47,6 +47,8 @@ public class CommandManager extends ListenerAdapter {
         //Music Commands
         commandsMap.put("play", new PlayCommand(restService, playerManagerService, trackService));
         commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils));
+        commandsMap.put("forward", new ForwardCommand(playerManagerService, musicCommandUtils));
+        commandsMap.put("rewind", new RewindCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("pause", new PauseCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("resume", new ResumeCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("leave", new LeaveCommand(playerManagerService, musicCommandUtils));

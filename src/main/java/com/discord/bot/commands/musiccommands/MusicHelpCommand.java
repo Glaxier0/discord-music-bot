@@ -18,6 +18,8 @@ public class MusicHelpCommand implements ISlashCommand {
         embedBuilder.setTitle("Music Commands").setDescription("""
                         - /play
                         - /skip
+                        - /forward
+                        - /rewind
                         - /pause
                         - /resume
                         - /leave
