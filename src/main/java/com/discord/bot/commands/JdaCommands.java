@@ -15,6 +15,12 @@ public class JdaCommands {
                         .addOptions(new OptionData(OptionType.STRING, "query", "Song url or name.")
                                 .setRequired(true)),
                 Commands.slash("skip", "Skip the current song."),
+                Commands.slash("forward", "Forward the current song x seconds.")
+                        .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
+                                .setRequired(true)),
+                Commands.slash("rewind", "Rewind the current song x seconds.")
+                        .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
+                                .setRequired(true)),
                 Commands.slash("pause", "Pause the current song."),
                 Commands.slash("resume", "Resume paused song."),
                 Commands.slash("leave", "Make bot leave voice channel."),
