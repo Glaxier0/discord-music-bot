@@ -20,7 +20,15 @@ public class ForwardCommand implements ISlashCommand {
     public void execute(SlashCommandInteractionEvent event) {
         if (utils.channelControl(event)) {
             var track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
-            var seconds = event.getOption("sec").getAsLong();
+
+            var option = event.getOption("sec");
+            if (option == null) {
+                event.replyEmbeds(new EmbedBuilder().setDescription("Seconds can't be null.")
+                        .setColor(Color.RED).build()).queue();
+                return;
+            }
+
+            var seconds = option.getAsLong();
             track.setPosition(track.getPosition() + (seconds * 1000));
             event.replyEmbeds(new EmbedBuilder().setDescription("Song forwarded by " + seconds + " seconds.")
                     .setColor(Color.GREEN).build()).queue();

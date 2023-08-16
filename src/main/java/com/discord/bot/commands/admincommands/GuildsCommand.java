@@ -22,13 +22,14 @@ public class GuildsCommand implements ISlashCommand {
                 writer.write("GUILD COUNT: " + event.getJDA().getGuilds().size() + "\n        ID         NAME");
 
                 for (Guild guild : event.getJDA().getGuilds()) {
-                    writer.append("\n" + guild.getId() + " " + guild.getName());
+                    writer.append("\n").append(guild.getId()).append(" ").append(guild.getName());
                 }
 
                 writer.close();
                 event.replyFiles(FileUpload.fromData(guildsFile)).queue();
                 Thread.sleep(100);
-                guildsFile.delete();
+                boolean isDeleted = guildsFile.delete();
+                System.out.println("Guild file deletion status: " + isDeleted);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }

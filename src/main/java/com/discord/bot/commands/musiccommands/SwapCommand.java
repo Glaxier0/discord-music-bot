@@ -25,10 +25,18 @@ public class SwapCommand implements ISlashCommand {
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
+            var firstOption = event.getOption("songnum1");
+            var secondOption = event.getOption("songnum2");
+
+            if (firstOption == null || secondOption == null) {
+                event.replyEmbeds(new EmbedBuilder().setDescription("Song numbers can't be null.")
+                        .setColor(Color.RED).build()).queue();
+                return;
+            }
 
             if (trackList.size() > 1) {
-                int first = event.getOption("songnum1").getAsInt() - 1;
-                int second = event.getOption("songnum2").getAsInt() - 1;
+                int first = firstOption.getAsInt() - 1;
+                int second = secondOption.getAsInt() - 1;
 
                 try {
                     AudioTrack temp = trackList.get(first);
@@ -47,7 +55,7 @@ public class SwapCommand implements ISlashCommand {
                 }
 
                 event.replyEmbeds(new EmbedBuilder()
-                        .setDescription("Successfully swapped order of two songs")
+                        .setDescription("Successfully swapped order of the two songs")
                         .setColor(Color.GREEN).build()).queue();
             } else if (trackList.size() == 1) {
                 event.replyEmbeds(new EmbedBuilder().setDescription("There is only one song in queue.")

@@ -9,6 +9,7 @@ public class TestCommands {
     public void addTestCommands(JDA jda, String TEST_SERVER) {
         while (jda.getGuildById(TEST_SERVER) == null) {
             try {
+                //noinspection BusyWait
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -16,13 +17,18 @@ public class TestCommands {
         }
 
         Guild testServer = jda.getGuildById(TEST_SERVER);
-        CommandListUpdateAction testServerCommands = testServer.updateCommands();
+        CommandListUpdateAction testServerCommands = null;
+        if (testServer != null) {
+            testServerCommands = testServer.updateCommands();
+        }
 
 
-        testServerCommands.addCommands(
-                //admin commands
-                Commands.slash("guilds", "Get guild list that bot is in."),
-                Commands.slash("logs", "Get logs.")
-        ).queue();
+        if (testServerCommands != null) {
+            testServerCommands.addCommands(
+                    //admin commands
+                    Commands.slash("guilds", "Get guild list that bot is in."),
+                    Commands.slash("logs", "Get logs.")
+            ).queue();
+        }
     }
 }

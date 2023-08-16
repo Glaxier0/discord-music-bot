@@ -7,8 +7,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
-import java.awt.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -17,6 +17,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
     public SlashCommandInteractionEvent event;
+    public ButtonInteractionEvent buttonEvent;
     private int COUNT = 0;
 
     public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
@@ -25,20 +26,32 @@ public class TrackScheduler extends AudioEventAdapter {
         this.event = event;
     }
 
+    public TrackScheduler(AudioPlayer player, ButtonInteractionEvent event) {
+        this.player = player;
+        this.queue = new LinkedBlockingQueue<>();
+        this.buttonEvent = event;
+    }
+
     public void setEvent(SlashCommandInteractionEvent event) {
         this.event = event;
     }
 
     public void queue(AudioTrack track) {
         if (!this.player.startTrack(track, true)) {
-            this.queue.offer(track);
+            boolean offerSuccess = this.queue.offer(track);
+
+            if (!offerSuccess) {
+                System.err.println("Queue is full, could not add track: " + track.getInfo().title);
+            }
         }
     }
 
     public void nextTrack() {
         this.player.startTrack(this.queue.poll(), false);
         if (player.getPlayingTrack() == null) {
-            event.getGuild().getAudioManager().closeAudioConnection();
+            if (event.getGuild() != null) {
+                event.getGuild().getAudioManager().closeAudioConnection();
+            }
         }
         if (repeating) {
             repeating = false;
@@ -46,16 +59,10 @@ public class TrackScheduler extends AudioEventAdapter {
     }
 
     @Override
-    public void onTrackStart(AudioPlayer player, AudioTrack track) {
-//        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setTitle("Now playing").setDescription("[" + track.getInfo().title
-//                + "](" + track.getInfo().uri + ")").setColor(Color.GREEN).build()).queue();
-    }
-
-    @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if (COUNT >= 1) {
             COUNT = 0;
-            event.getChannel().sendMessageEmbeds(new EmbedBuilder()
+            event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder()
                     .setDescription("Track failed to start.").build()).queue();
             return;
         }
@@ -65,18 +72,21 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
-            if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
-                event.getGuild().getAudioManager().closeAudioConnection();
-                return;
+        if (event.getGuild() != null) {
+            if (event.getGuild().getSelfMember().getVoiceState() != null
+                    && event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
+                if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+                    event.getGuild().getAudioManager().closeAudioConnection();
+                    return;
+                }
             }
-        }
-        if (endReason.mayStartNext) {
-            if (this.repeating) {
-                this.player.startTrack(track.makeClone(), false);
-                return;
+            if (endReason.mayStartNext) {
+                if (this.repeating) {
+                    this.player.startTrack(track.makeClone(), false);
+                    return;
+                }
+                nextTrack();
             }
-            nextTrack();
         }
     }
 }

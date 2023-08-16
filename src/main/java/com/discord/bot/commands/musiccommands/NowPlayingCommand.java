@@ -41,7 +41,7 @@ public class NowPlayingCommand implements ISlashCommand {
 
                 embedBuilder.setTitle("Now playing").setDescription(":headphones: [" + track.getInfo().title
                                 + "](" + track.getInfo().uri + ")")
-                        .addField(":watch: Timestamp",  "```" + " " + timestamp + "```", true)
+                        .addField(":watch: Timestamp", "```" + " " + timestamp + "```", true)
                         .addField(":stopwatch: Remaining", "```" + " " + remaining + "```", true)
                         .setColor(Color.GREEN);
             } else {

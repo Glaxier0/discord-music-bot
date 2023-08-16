@@ -5,15 +5,22 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 public class MusicCommandUtils {
     public boolean channelControl(SlashCommandInteractionEvent event) {
-        GuildVoiceState selfVoiceState = event.getGuild().getSelfMember().getVoiceState();
-        GuildVoiceState memberVoiceState = event.getMember().getVoiceState();
+        var guild = event.getGuild();
 
-        if (!selfVoiceState.inAudioChannel()) {
-            return false;
+        if (guild != null && event.getMember() != null) {
+            GuildVoiceState selfVoiceState = guild.getSelfMember().getVoiceState();
+            GuildVoiceState memberVoiceState = event.getMember().getVoiceState();
+            if (selfVoiceState != null && memberVoiceState != null) {
+                if (!selfVoiceState.inAudioChannel()) {
+                    return false;
+                }
+                if (!memberVoiceState.inAudioChannel()) {
+                    return false;
+                }
+
+                return memberVoiceState.getChannel() == selfVoiceState.getChannel();
+            }
         }
-        if (!memberVoiceState.inAudioChannel()) {
-            return false;
-        }
-        return memberVoiceState.getChannel() == selfVoiceState.getChannel();
+        return false;
     }
 }
