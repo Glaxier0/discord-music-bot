@@ -20,7 +20,15 @@ public class RewindCommand implements ISlashCommand {
     public void execute(SlashCommandInteractionEvent event) {
         if (utils.channelControl(event)) {
             var track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
-            var seconds = event.getOption("sec").getAsLong();
+
+            var option = event.getOption("sec");
+            if (option == null) {
+                event.replyEmbeds(new EmbedBuilder().setDescription("Seconds can't be null.")
+                        .setColor(Color.RED).build()).queue();
+                return;
+            }
+
+            var seconds = option.getAsLong();
             var songPosition = track.getPosition();
             if (songPosition - (seconds * 1000) < 0) {
                 track.setPosition(0);

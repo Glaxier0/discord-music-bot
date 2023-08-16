@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -42,13 +43,34 @@ public class PlayerManagerService {
 
     public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
         Guild guild = event.getGuild();
-        return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
 
-            guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
+        if (guild != null) {
+            return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
+                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
 
-            return guildMusicManager;
-        });
+                guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
+
+                return guildMusicManager;
+            });
+        }
+
+        return null;
+    }
+
+    public GuildMusicManager getMusicManager(ButtonInteractionEvent event) {
+        Guild guild = event.getGuild();
+
+        if (guild != null) {
+            return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
+                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
+
+                guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
+
+                return guildMusicManager;
+            });
+        }
+
+        return null;
     }
 
     public void loadAndPlay(SlashCommandInteractionEvent event, MusicPojo musicPojo) {
@@ -88,6 +110,7 @@ public class PlayerManagerService {
             }
         });
     }
+
     @Async
     public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
@@ -127,9 +150,9 @@ public class PlayerManagerService {
             });
         }
         if (errorCounter > 0) {
-            apiLimitExceeded(event.getChannel());
+            apiLimitExceeded(event.getMessageChannel());
         }
-        event.getChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
+        event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
                 .build()).queue();
     }
 

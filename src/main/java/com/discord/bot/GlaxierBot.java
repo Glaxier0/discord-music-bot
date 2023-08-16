@@ -7,7 +7,6 @@ import com.discord.bot.service.RestService;
 import com.discord.bot.service.SpotifyTokenService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeHttpContextFilter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -16,8 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-
-import javax.security.auth.login.LoginException;
 
 @Configuration
 @EnableScheduling
@@ -36,17 +33,15 @@ public class GlaxierBot {
     @Value("${__Secure-3PAPISID}")
     private String PAPISID;
 
-
-    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService, TrackService trackService,
+    public GlaxierBot(RestService restService, PlayerManagerService playerManagerService,
                       SpotifyTokenService spotifyTokenService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
-        this.trackService = trackService;
         this.spotifyTokenService = spotifyTokenService;
     }
 
     @Bean
-    public void startDiscordBot() throws LoginException {
+    public void startDiscordBot() {
         JDA jda = JDABuilder.createDefault(DISCORD_TOKEN)
                 .addEventListeners(
                         new CommandManager(restService, playerManagerService, trackService))
@@ -67,7 +62,3 @@ public class GlaxierBot {
 //        YoutubeHttpContextFilter.setPAPISID(PAPISID);
     }
 }
-
-
-
-
