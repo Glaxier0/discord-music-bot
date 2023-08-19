@@ -95,7 +95,14 @@ public class PlayCommand implements ISlashCommand {
     private List<MusicPojo> getYoutubeLink(String query, GenericCommandInteractionEvent event) {
         List<MusicPojo> musicPojos = new ArrayList<>();
         MusicPojo musicPojo;
-        if (query.contains("https://www.youtube.com/watch?v=")) {
+        if (query.contains("https://www.youtube.com/watch?v=")
+                || query.contains("https://youtu.be/")
+                || query.contains("https://youtube.com/playlist?list=")
+                || query.contains("https://music.youtube.com/watch?v=")
+                || query.contains("https://music.youtube.com/playlist?list=")
+                || query.contains("https://www.twitch.tv/")
+                || query.contains("https://soundcloud.com/")
+        ) {
             musicPojo = new MusicPojo(null, query);
             musicPojos.add(musicPojo);
         } else if (query.contains("https://open.spotify.com/")) {
