@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MusicPojo {
+public class MusicDto {
     String title;
     String youtubeUri;
 }

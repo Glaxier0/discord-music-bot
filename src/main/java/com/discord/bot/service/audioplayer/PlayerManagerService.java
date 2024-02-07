@@ -1,7 +1,7 @@
 package com.discord.bot.service.audioplayer;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.entity.pojo.MusicPojo;
+import com.discord.bot.entity.pojo.MusicDto;
 import com.discord.bot.entity.MusicData;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
@@ -73,18 +73,24 @@ public class PlayerManagerService {
         return null;
     }
 
-    public void loadAndPlay(SlashCommandInteractionEvent event, MusicPojo musicPojo) {
+    public void loadAndPlay(SlashCommandInteractionEvent event, MusicDto musicDto, boolean ephemeral) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
+        this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
                 embedBuilder.clear();
-                event.replyEmbeds(embedBuilder.setDescription("Song added to queue: " + track.getInfo().title
-                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1)).setColor(Color.GREEN).build()).queue();
+                event.replyEmbeds(embedBuilder
+                                .setDescription("Song added to queue: " + track.getInfo().title
+                                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1))
+                                .setColor(Color.GREEN)
+                                .build())
+                        .setEphemeral(ephemeral)
+                        .queue();
+
                 musicManager.scheduler.setEvent(event);
                 musicManager.scheduler.queue(track);
-                String title = musicPojo.getTitle();
+                String title = musicDto.getTitle();
                 cacheTrack(track, title);
             }
 
@@ -95,8 +101,12 @@ public class PlayerManagerService {
                 for (AudioTrack track : tracks) {
                     musicManager.scheduler.queue(track);
                 }
-                event.replyEmbeds(new EmbedBuilder().setDescription(tracks.size() + " song added to queue.")
-                        .setColor(Color.GREEN).build()).queue();
+                event.replyEmbeds(new EmbedBuilder()
+                                .setDescription(tracks.size() + " song added to queue.")
+                                .setColor(Color.GREEN)
+                                .build())
+                        .setEphemeral(ephemeral)
+                        .queue();
             }
 
             @Override
@@ -112,24 +122,30 @@ public class PlayerManagerService {
     }
 
     @Async
-    public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
+    public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicDto> musicDtos, boolean ephemeral) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         musicManager.scheduler.setEvent(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        event.replyEmbeds(embedBuilder.setDescription("Reading spotify playlist.")
-                .setColor(Color.GREEN).build()).queue();
+
+        event.replyEmbeds(embedBuilder
+                        .setDescription("Reading spotify playlist.")
+                        .setColor(Color.GREEN)
+                        .build())
+                .setEphemeral(ephemeral)
+                .queue();
+
         int errorCounter = 0;
-        for (MusicPojo musicPojo : musicPojos) {
-            musicPojo.setYoutubeUri(restService.getYoutubeLink(musicPojo).getYoutubeUri());
-            if (musicPojo.getYoutubeUri().equals("403glaxierror")) {
+        for (MusicDto musicDto : musicDtos) {
+            musicDto.setYoutubeUri(restService.getYoutubeLink(musicDto).getYoutubeUri());
+            if (musicDto.getYoutubeUri().equals("403glaxierror")) {
                 errorCounter++;
                 continue;
             }
-            this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
+            this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     musicManager.scheduler.queue(track);
-                    String title = musicPojo.getTitle();
+                    String title = musicDto.getTitle();
                     cacheTrack(track, title);
                 }
 
@@ -152,7 +168,7 @@ public class PlayerManagerService {
         if (errorCounter > 0) {
             apiLimitExceeded(event.getMessageChannel());
         }
-        event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
+        event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicDtos.size() - errorCounter + " tracks queued.")
                 .build()).queue();
     }
 
@@ -167,7 +183,10 @@ public class PlayerManagerService {
     }
 
     private void apiLimitExceeded(MessageChannel channel) {
-        channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
-                "Please use youtube links to play music for today.").build()).queue();
+        channel.sendMessageEmbeds(new EmbedBuilder()
+                        .setDescription("Youtube quota has exceeded. " +
+                                "Please use youtube links to play music for today.")
+                        .build())
+                .queue();
     }
 }

@@ -14,29 +14,55 @@ public class JdaCommands {
                 //Music Commands
                 Commands.slash("play", "Play a song on your voice channel.")
                         .addOptions(new OptionData(OptionType.STRING, "query", "Song url or name.")
-                                .setRequired(true)),
-                Commands.slash("skip", "Skip the current song."),
+                                        .setRequired(true),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                        .setRequired(false)),
+                Commands.slash("skip", "Skip the current song.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
                 Commands.slash("forward", "Forward the current song x seconds.")
                         .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
-                                .setRequired(true)),
+                                        .setRequired(true),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                        .setRequired(false)),
                 Commands.slash("rewind", "Rewind the current song x seconds.")
                         .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
-                                .setRequired(true)),
-                Commands.slash("pause", "Pause the current song."),
-                Commands.slash("resume", "Resume the paused song."),
-                Commands.slash("leave", "Make bot leave the voice channel."),
+                                        .setRequired(true),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                        .setRequired(false)),
+                Commands.slash("pause", "Pause the current song.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
+                Commands.slash("resume", "Resume the paused song.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
+                Commands.slash("leave", "Make bot leave the voice channel.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
                 Commands.slash("queue", "List the song queue.")
-                        .addOption(OptionType.INTEGER, "page", "Displayed page of the queue.", false),
+                        .addOptions(new OptionData(OptionType.INTEGER, "page", "Displayed page of the queue.")
+                                        .setRequired(false),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                        .setRequired(false)),
                 Commands.slash("swap", "Swap order of two the songs in queue")
                         .addOptions(new OptionData(OptionType.INTEGER, "songnum1",
                                         "Song number in the queue to be changed.").setRequired(true),
                                 new OptionData(OptionType.INTEGER, "songnum2",
-                                        "Song number in the queue to be changed.").setRequired(true)),
-                Commands.slash("shuffle", "Shuffle the queue."),
-                Commands.slash("loop", "Loop the current song."),
+                                        "Song number in the queue to be changed.").setRequired(true),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                        .setRequired(false)),
+                Commands.slash("shuffle", "Shuffle the queue.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
+                Commands.slash("loop", "Loop the current song.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
                 Commands.slash("remove", "Remove song(s) from the queue.")
                         .addSubcommands(new SubcommandData("single", "Remove a song from the queue.")
-                                        .addOption(OptionType.INTEGER, "songnum", "Song number to be removed from queue"),
+                                        .addOptions(new OptionData(OptionType.INTEGER, "songnum", "Song number to be removed from queue")
+                                                        .setRequired(false),
+                                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                                        .setRequired(false)),
                                 new SubcommandData("between", "Removes songs at the specified indexes as " +
                                         "well as the songs located between those indexes")
                                         .addOptions(new OptionData(OptionType.INTEGER, "songnum1",
@@ -44,10 +70,16 @@ public class JdaCommands {
                                                         .setRequired(true),
                                                 new OptionData(OptionType.INTEGER, "songnum2",
                                                         "The song number in the queue to be at the tail of the removed list.")
-                                                        .setRequired(true)),
+                                                        .setRequired(true),
+                                                new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                                        .setRequired(false)),
                                 new SubcommandData("all", "Clear the queue.")),
-                Commands.slash("nowplaying", "Show the currently playing song."),
+                Commands.slash("nowplaying", "Show the currently playing song.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false)),
                 Commands.slash("mhelp", "Help page for the music commands.")
+                        .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
+                                .setRequired(false))
         ).queue();
     }
 }

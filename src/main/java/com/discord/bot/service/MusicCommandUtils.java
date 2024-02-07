@@ -2,7 +2,9 @@ package com.discord.bot.commands.musiccommands;
 
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.springframework.stereotype.Service;
 
+@Service
 public class MusicCommandUtils {
     public boolean channelControl(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();

@@ -1,32 +1,30 @@
 package com.discord.bot.commands.musiccommands;
 
+import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
 
+@AllArgsConstructor
 public class PauseCommand implements ISlashCommand {
-    MusicCommandUtils utils;
     PlayerManagerService playerManagerService;
-
-    public PauseCommand(PlayerManagerService playerManagerService, MusicCommandUtils utils) {
-        this.playerManagerService = playerManagerService;
-        this.utils = utils;
-    }
+    MusicCommandUtils utils;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        if (utils.channelControl(event)) {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        var ephemeralOption = event.getOption("ephemeral");
+        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
+        if (utils.channelControl(event)) {
             playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
-            event.replyEmbeds(embedBuilder.setDescription("Song paused")
-                    .setColor(Color.GREEN).build()).queue();
-        } else {
-            event.replyEmbeds(new EmbedBuilder().setDescription("Please be in a same voice channel as bot.")
-                    .setColor(Color.RED).build()).queue();
-        }
+            embedBuilder.setDescription("Song paused").setColor(Color.GREEN);
+        } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
+
+        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
     }
 }
