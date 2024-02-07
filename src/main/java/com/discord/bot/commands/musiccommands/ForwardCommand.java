@@ -24,16 +24,14 @@ public class ForwardCommand implements ISlashCommand {
             var track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
             var option = event.getOption("sec");
 
-            if (option == null) embedBuilder.setDescription("Seconds can't be null.").setColor(Color.RED);
-            else {
+            if (option != null) {
                 var seconds = option.getAsInt();
                 track.setPosition(track.getPosition() + (seconds * 1000L));
 
                 embedBuilder.setDescription("Song forwarded by " + seconds + " seconds.").setColor(Color.GREEN);
-            }
+            } else embedBuilder.setDescription("Seconds can't be null.").setColor(Color.RED);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
         event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
     }
 }
-

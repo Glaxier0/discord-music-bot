@@ -20,6 +20,7 @@ public class SwapCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
         var ephemeralOption = event.getOption("ephemeral");
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
@@ -28,68 +29,30 @@ public class SwapCommand implements ISlashCommand {
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             var firstOption = event.getOption("songnum1");
             var secondOption = event.getOption("songnum2");
+            int first = firstOption.getAsInt() - 1;
+            int second = secondOption.getAsInt() - 1;
+            int size = musicManager.scheduler.queue.size();
 
             if (firstOption == null || secondOption == null) {
-                event.replyEmbeds(new EmbedBuilder()
-                                .setDescription("Song numbers can't be null.")
-                                .setColor(Color.RED)
-                                .build())
-                        .setEphemeral(ephemeral)
-                        .queue();
-                return;
-            }
-
-            if (trackList.size() > 1) {
-                int first = firstOption.getAsInt() - 1;
-                int second = secondOption.getAsInt() - 1;
-
-                try {
+                embedBuilder.setDescription("Song numbers can't be null.").setColor(Color.RED);
+            } else if (first >= size || second >= size) {
+                embedBuilder.setDescription("Please enter a valid queue ids for both of the songs.").setColor(Color.RED);
+            } else {
+                if (trackList.size() > 1) {
                     AudioTrack temp = trackList.get(first);
                     trackList.set(first, trackList.get(second));
                     trackList.set(second, temp);
-                } catch (Exception e) {
-                    event.replyEmbeds(new EmbedBuilder()
-                                    .setDescription("Please enter a valid queue ids for both of the songs.")
-                                    .setColor(Color.RED)
-                                    .build())
-                            .setEphemeral(ephemeral)
-                            .queue();
-                    return;
-                }
 
-                musicManager.scheduler.queue.clear();
-                for (AudioTrack track : trackList) {
-                    musicManager.scheduler.queue(track);
-                }
+                    musicManager.scheduler.queue.clear();
+                    musicManager.scheduler.queueAll(trackList);
 
-                event.replyEmbeds(new EmbedBuilder()
-                                .setDescription("Successfully swapped order of the two songs")
-                                .setColor(Color.GREEN)
-                                .build())
-                        .setEphemeral(ephemeral)
-                        .queue();
-            } else if (trackList.size() == 1) {
-                event.replyEmbeds(new EmbedBuilder()
-                                .setDescription("There is only one song in queue.")
-                                .setColor(Color.RED)
-                                .build())
-                        .setEphemeral(ephemeral)
-                        .queue();
-            } else {
-                event.replyEmbeds(new EmbedBuilder()
-                                .setDescription("Queue is empty.")
-                                .setColor(Color.RED)
-                                .build())
-                        .setEphemeral(ephemeral)
-                        .queue();
+                    embedBuilder.setDescription("Successfully swapped order of the two songs").setColor(Color.GREEN);
+                } else if (trackList.size() == 1) {
+                    embedBuilder.setDescription("There is only one song in queue.").setColor(Color.RED);
+                } else embedBuilder.setDescription("Queue is empty.").setColor(Color.RED);
             }
-        } else {
-            event.replyEmbeds(new EmbedBuilder()
-                            .setDescription("Please be in a same voice channel as bot.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-        }
+        } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
+
+        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
     }
 }

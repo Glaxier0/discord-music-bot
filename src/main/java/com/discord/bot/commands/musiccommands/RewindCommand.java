@@ -22,10 +22,9 @@ public class RewindCommand implements ISlashCommand {
 
         if (utils.channelControl(event)) {
             var track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
-
             var option = event.getOption("sec");
-            if (option == null) embedBuilder.setDescription("Seconds can't be null.").setColor(Color.RED);
-            else {
+
+            if (option != null) {
                 var seconds = option.getAsInt();
                 var songPosition = track.getPosition();
                 if (songPosition - (seconds * 1000L) < 0) {
@@ -35,7 +34,7 @@ public class RewindCommand implements ISlashCommand {
                     track.setPosition(songPosition - (seconds * 1000L));
                     embedBuilder.setDescription("Song rewound by " + seconds + " seconds.").setColor(Color.GREEN);
                 }
-            }
+            } else embedBuilder.setDescription("Seconds can't be null.").setColor(Color.RED);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
         event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();

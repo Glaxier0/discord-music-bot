@@ -16,26 +16,15 @@ public class ResumeCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
         var ephemeralOption = event.getOption("ephemeral");
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-
             playerManagerService.getMusicManager(event).audioPlayer.setPaused(false);
-            event.replyEmbeds(embedBuilder
-                            .setDescription("Song resumed")
-                            .setColor(Color.GREEN)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-        } else {
-            event.replyEmbeds(new EmbedBuilder()
-                            .setDescription("Please be in a same voice channel as bot.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-        }
+            embedBuilder.setDescription("Song resumed").setColor(Color.GREEN);
+        } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
+
+        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
     }
 }

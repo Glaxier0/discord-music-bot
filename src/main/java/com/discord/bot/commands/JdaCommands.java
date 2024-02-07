@@ -46,9 +46,13 @@ public class JdaCommands {
                                         .setRequired(false)),
                 Commands.slash("swap", "Swap order of two the songs in queue")
                         .addOptions(new OptionData(OptionType.INTEGER, "songnum1",
-                                        "Song number in the queue to be changed.").setRequired(true),
+                                        "Song number in the queue to be changed.")
+                                        .setMinValue(1)
+                                        .setRequired(true),
                                 new OptionData(OptionType.INTEGER, "songnum2",
-                                        "Song number in the queue to be changed.").setRequired(true),
+                                        "Song number in the queue to be changed.")
+                                        .setMinValue(1)
+                                        .setRequired(true),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", "Bot reply will only visible to you if set as TRUE, default value is TRUE.")
                                         .setRequired(false)),
                 Commands.slash("shuffle", "Shuffle the queue.")

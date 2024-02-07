@@ -21,37 +21,23 @@ public class ShuffleCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
         var ephemeralOption = event.getOption("ephemeral");
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            EmbedBuilder embedBuilder = new EmbedBuilder();
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
-
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
+
             if (trackList.size() > 1) {
                 Collections.shuffle(trackList);
                 musicManager.scheduler.queue.clear();
-
-                for (AudioTrack track : trackList) {
-                    musicManager.scheduler.queue(track);
-                }
+                musicManager.scheduler.queueAll(trackList);
 
                 embedBuilder.setDescription("Queue shuffled").setColor(Color.GREEN);
-            } else {
-                embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
-            }
-            event.replyEmbeds(embedBuilder
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-        } else {
-            event.replyEmbeds(new EmbedBuilder()
-                            .setDescription("Please be in a same voice channel as bot.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-        }
+            } else embedBuilder.setDescription("Queue size have to be at least two.").setColor(Color.RED);
+        } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
+
+        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
     }
 }
