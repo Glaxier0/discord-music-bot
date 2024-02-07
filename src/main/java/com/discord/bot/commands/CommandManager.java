@@ -3,6 +3,7 @@ package com.discord.bot.commands;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
+import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -22,10 +23,10 @@ public class CommandManager extends ListenerAdapter {
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-                          TrackService trackService) {
+                          MusicCommandUtils musicCommandUtils, TrackService trackService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
-        this.musicCommandUtils = new MusicCommandUtils();
+        this.musicCommandUtils =  musicCommandUtils;
         this.trackService = trackService;
         commandMapper();
     }
@@ -42,7 +43,7 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-        IButtonInteraction interaction = new QueueButton(playerManagerService);
+        IButtonInteraction interaction = new QueueButton(playerManagerService, musicCommandUtils);
         interaction.click(event);
     }
 
@@ -59,12 +60,12 @@ public class CommandManager extends ListenerAdapter {
         commandsMap.put("pause", new PauseCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("resume", new ResumeCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("leave", new LeaveCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("queue", new QueueCommand(playerManagerService));
+        commandsMap.put("queue", new QueueCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("swap", new SwapCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("shuffle", new ShuffleCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("loop", new LoopCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("remove", new RemoveCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("nowplaying", new NowPlayingCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("mhelp", new MusicHelpCommand(musicCommandUtils));
+        commandsMap.put("mhelp", new MusicHelpCommand());
     }
 }
