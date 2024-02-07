@@ -27,7 +27,7 @@ public class RewindCommand implements ISlashCommand {
             if (option != null) {
                 var seconds = option.getAsInt();
                 var songPosition = track.getPosition();
-                if (songPosition - (seconds * 1000L) < 0) {
+                if (songPosition - (seconds * 1000L) <= 0) {
                     track.setPosition(0);
                     embedBuilder.setDescription("Song rewound to the start.").setColor(Color.GREEN);
                 } else {
