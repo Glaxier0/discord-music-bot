@@ -1,16 +1,19 @@
 package com.discord.bot.service;
 
-import com.discord.bot.entity.pojo.MusicPojo;
-import com.discord.bot.entity.MusicData;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.discord.bot.dto.Response.Spotify.SpotifyItemDto;
+import com.discord.bot.dto.Response.Spotify.SpotifyPlaylistResponse;
+import com.discord.bot.dto.Response.Spotify.SpotifyTrackResponse;
+import com.discord.bot.dto.Response.Spotify.TrackDto;
+import com.discord.bot.dto.Response.Youtube.YoutubeResponse;
+import com.discord.bot.repository.MusicRepository;
+import com.discord.bot.dto.MultipleMusicDto;
+import com.discord.bot.dto.MusicDto;
+import com.discord.bot.entity.Music;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -20,93 +23,135 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class RestService {
     public static String SPOTIFY_TOKEN;
     private final RestTemplate restTemplate;
-    TrackService trackService;
+    MusicRepository musicRepository;
     @Value("${youtube_api_key}")
     private String YOUTUBE_API_KEY;
 
-    public RestService(TrackService trackService) {
+    public RestService(MusicRepository musicRepository) {
         this.restTemplate = new RestTemplateBuilder().build();
-        this.trackService = trackService;
+        this.musicRepository = musicRepository;
     }
 
-    public List<MusicPojo> getSpotifyMusicName(String spotifyUrl) {
+    public List<MusicDto> getTracksFromSpotify(String spotifyUrl) {
         String id;
-        List<MusicPojo> musicPojos = new ArrayList<>();
+        List<MusicDto> musicDtos = new ArrayList<>();
 
         if (spotifyUrl.contains("https://open.spotify.com/playlist/")) {
             id = spotifyUrl.substring(34, 56);
             spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
-            ResponseEntity<String> spotifyData = getSpotifyData(spotifyUrl);
-            JsonArray items = new JsonParser()
-                    .parse(spotifyData.getBody()).getAsJsonObject().get("items").getAsJsonArray();
+            SpotifyPlaylistResponse spotifyPlaylistResponse = getSpotifyPlaylistData(spotifyUrl);
+            List<SpotifyItemDto> items = spotifyPlaylistResponse.getSpotifyItemDtoList();
 
-            for (int i = 0; i < items.size(); i++) {
-                String musicName = items.get(i).getAsJsonObject().get("track").getAsJsonObject()
-                        .getAsJsonArray("artists").get(0).getAsJsonObject().get("name").getAsString() +
-                        " - " + items.get(i).getAsJsonObject().get("track").getAsJsonObject().get("name").getAsString();
-                musicPojos.add(new MusicPojo(musicName, null));
+            for (SpotifyItemDto item : items) {
+                TrackDto trackDtoList = item.getTrackDtoList();
+                String musicName = trackDtoList.getArtistDtoList().get(0).getName() + " - " + trackDtoList.getName();
+                musicDtos.add(new MusicDto(musicName, null));
             }
         } else if (spotifyUrl.contains("https://open.spotify.com/track/")) {
             id = spotifyUrl.substring(31, 53);
             spotifyUrl = "https://api.spotify.com/v1/tracks/" + id;
-
-            ResponseEntity<String> responseEntity = getSpotifyData(spotifyUrl);
-            String musicName = new JsonParser().parse(responseEntity.getBody()).getAsJsonObject()
-                    .getAsJsonArray("artists").get(0).getAsJsonObject().get("name").getAsString() + " - " +
-                    new JsonParser().parse(responseEntity.getBody()).getAsJsonObject().get("name").getAsString();
-            musicPojos.add(new MusicPojo(musicName, null));
+            SpotifyTrackResponse spotifyTrackResponse = getSpotifyTrackData(spotifyUrl);
+            String musicName = spotifyTrackResponse.getArtistDtoList().get(0).getName() +
+                    " - " + spotifyTrackResponse.getSongName();
+            musicDtos.add(new MusicDto(musicName, null));
         }
-        return musicPojos;
+
+        return musicDtos;
     }
 
-    public ResponseEntity<String> getSpotifyData(String spotifyUrl) {
-        URI spotifyUri = null;
+    public MultipleMusicDto getYoutubeUrl(MusicDto musicDto) {
+        int count = 0;
+        int failCount = 0;
 
-        try {
-            spotifyUri = new URI(spotifyUrl);
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
+        Music music = musicRepository.findFirstByTitle(musicDto.getTitle());
+
+        if (music != null) {
+            musicDto.setYoutubeUri(music.getYoutubeUri());
+            count++;
+        } else {
+            try {
+                var youtubeUri = getYoutubeApiUri(musicDto.getTitle());
+                setYoutubeVideoUrl(youtubeUri, musicDto);
+                count++;
+            } catch (HttpClientErrorException.Forbidden e) {
+                failCount++;
+            }
         }
+
+        return new MultipleMusicDto(count, Collections.singletonList(musicDto), failCount);
+    }
+
+    public MultipleMusicDto getYoutubeUrl(List<MusicDto> musicDtos) {
+        AtomicInteger count = new AtomicInteger(0);
+        AtomicInteger failCount = new AtomicInteger(0);
+
+        List<MusicDto> updatedMusicDtos = musicDtos.parallelStream().peek(musicDto -> {
+            Music music = musicRepository.findFirstByTitle(musicDto.getTitle());
+
+            if (music != null) {
+                musicDto.setYoutubeUri(music.getYoutubeUri());
+                count.incrementAndGet();
+            } else {
+                try {
+                    var youtubeApiUri = getYoutubeApiUri(musicDto.getTitle());
+                    setYoutubeVideoUrl(youtubeApiUri, musicDto);
+                    count.incrementAndGet();
+                } catch (HttpClientErrorException.Forbidden e) {
+                    failCount.incrementAndGet();
+                }
+            }
+        }).collect(Collectors.toList());
+
+        return new MultipleMusicDto(count.get(), updatedMusicDtos, failCount.get());
+    }
+
+    private void setYoutubeVideoUrl(URI youtubeUri, MusicDto musicDto) {
+        YoutubeResponse youtubeResponse = restTemplate.getForObject(youtubeUri, YoutubeResponse.class);
+        assert youtubeResponse != null;
+        musicDto.setYoutubeUri("https://www.youtube.com/watch?v=" + youtubeResponse.getItems().get(0).getId().getVideoId());
+    }
+
+    private SpotifyPlaylistResponse getSpotifyPlaylistData(String spotifyUrl) {
+        URI spotifyUri = createUri(spotifyUrl);
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(SPOTIFY_TOKEN);
         HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, String.class);
-        return responseEntity;
+        return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyPlaylistResponse.class).getBody();
     }
 
-    public MusicPojo getYoutubeLink(MusicPojo musicPojo) {
-        MusicData musicData = trackService.findFirst1ByTitle(musicPojo.getTitle());
-        if (musicData != null) {
-            musicPojo.setYoutubeUri(musicData.getYoutubeUri());
-        } else {
-            String encodedMusicName;
-            encodedMusicName = URLEncoder.encode(musicPojo.getTitle(), StandardCharsets.UTF_8);
-            String youtubeUrl = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))&maxResults=1&q="
-                    + encodedMusicName + "&key=" + YOUTUBE_API_KEY;
-            URI youtubeUri = null;
+    private SpotifyTrackResponse getSpotifyTrackData(String spotifyUrl) {
+        URI spotifyUri = createUri(spotifyUrl);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(SPOTIFY_TOKEN);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyTrackResponse.class).getBody();
+    }
 
-            try {
-                youtubeUri = new URI(youtubeUrl);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            JsonElement jsonElement;
+    private URI getYoutubeApiUri(String songTitle) {
+        String encodedMusicName = URLEncoder.encode(songTitle, StandardCharsets.UTF_8);
+        String youtubeUrl = "https://youtube.googleapis.com/youtube/v3/search?fields=items(id(videoId))" +
+                "&maxResults=1&q=" +
+                encodedMusicName +
+                "&key=" +
+                YOUTUBE_API_KEY;
 
-            try {
-                jsonElement = new JsonParser().parse(restTemplate.getForObject(youtubeUri, String.class));
-                String videoId = jsonElement.getAsJsonObject().getAsJsonArray("items")
-                        .get(0).getAsJsonObject().getAsJsonObject("id").get("videoId").getAsString();
-                musicPojo.setYoutubeUri("https://www.youtube.com/watch?v=" + videoId);
-            } catch (HttpClientErrorException.Forbidden exception) {
-                musicPojo.setYoutubeUri("403glaxierror");
-            }
+        return createUri(youtubeUrl);
+    }
+
+    private URI createUri(String url) {
+        try {
+            return new URI(url);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid URL: " + url, e);
         }
-        return musicPojo;
     }
 }

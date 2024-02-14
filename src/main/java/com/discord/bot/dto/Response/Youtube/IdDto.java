@@ -1,4 +1,4 @@
-package com.discord.bot.entity.pojo;
+package com.discord.bot.dto.Response.Youtube;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class MusicPojo {
-    String title;
-    String youtubeUri;
+public class IdDto {
+    private String videoId;
 }

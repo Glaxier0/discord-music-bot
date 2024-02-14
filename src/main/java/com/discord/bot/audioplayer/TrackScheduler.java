@@ -9,6 +9,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
+import java.awt.*;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -42,6 +44,17 @@ public class TrackScheduler extends AudioEventAdapter {
 
             if (!offerSuccess) {
                 System.err.println("Queue is full, could not add track: " + track.getInfo().title);
+            }
+        }
+    }
+
+    public void queueAll(List<AudioTrack> tracks) {
+        for (AudioTrack track : tracks) {
+            if (!this.player.startTrack(track, true)) {
+                boolean offerSuccess = this.queue.offer(track);
+
+                if (!offerSuccess)
+                    System.out.println("Queue is full, could not add track and tracks after: " + track.getInfo().title);
             }
         }
     }

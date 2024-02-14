@@ -1,10 +1,11 @@
 package com.discord.bot.service.audioplayer;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
-import com.discord.bot.entity.pojo.MusicPojo;
-import com.discord.bot.entity.MusicData;
+import com.discord.bot.repository.MusicRepository;
+import com.discord.bot.dto.MultipleMusicDto;
+import com.discord.bot.dto.MusicDto;
+import com.discord.bot.entity.Music;
 import com.discord.bot.service.RestService;
-import com.discord.bot.service.TrackService;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -14,7 +15,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
@@ -29,15 +29,15 @@ import java.util.Map;
 public class PlayerManagerService {
     private final Map<Long, GuildMusicManager> musicManagers;
     private final AudioPlayerManager audioPlayerManager;
-    TrackService trackService;
+    MusicRepository musicRepository;
     RestService restService;
 
-    public PlayerManagerService(TrackService trackService, RestService restService) {
+    public PlayerManagerService(MusicRepository musicRepository, RestService restService) {
         this.musicManagers = new HashMap<>();
         this.audioPlayerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
         AudioSourceManagers.registerLocalSource(this.audioPlayerManager);
-        this.trackService = trackService;
+        this.musicRepository = musicRepository;
         this.restService = restService;
     }
 
@@ -73,19 +73,22 @@ public class PlayerManagerService {
         return null;
     }
 
-    public void loadAndPlay(SlashCommandInteractionEvent event, MusicPojo musicPojo) {
+    public void loadAndPlay(SlashCommandInteractionEvent event, MusicDto musicDto, boolean ephemeral) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
+        this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                embedBuilder.clear();
-                event.replyEmbeds(embedBuilder.setDescription("Song added to queue: " + track.getInfo().title
-                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1)).setColor(Color.GREEN).build()).queue();
-                musicManager.scheduler.setEvent(event);
+                event.replyEmbeds(embedBuilder
+                                .setDescription("Song added to queue: " + track.getInfo().title
+                                        + "\n in queue: " + (musicManager.scheduler.queue.size() + 1))
+                                .setColor(Color.GREEN)
+                                .build())
+                        .setEphemeral(ephemeral)
+                        .queue();
+
                 musicManager.scheduler.queue(track);
-                String title = musicPojo.getTitle();
-                cacheTrack(track, title);
+                cacheTrack(track, musicDto.getTitle());
             }
 
             @Override
@@ -95,8 +98,12 @@ public class PlayerManagerService {
                 for (AudioTrack track : tracks) {
                     musicManager.scheduler.queue(track);
                 }
-                event.replyEmbeds(new EmbedBuilder().setDescription(tracks.size() + " song added to queue.")
-                        .setColor(Color.GREEN).build()).queue();
+                event.replyEmbeds(new EmbedBuilder()
+                                .setDescription(tracks.size() + " song added to queue.")
+                                .setColor(Color.GREEN)
+                                .build())
+                        .setEphemeral(ephemeral)
+                        .queue();
             }
 
             @Override
@@ -112,25 +119,36 @@ public class PlayerManagerService {
     }
 
     @Async
-    public void loadMultipleAndPlay(SlashCommandInteractionEvent event, List<MusicPojo> musicPojos) {
+    public void loadMultipleAndPlay(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
         final GuildMusicManager musicManager = this.getMusicManager(event);
         musicManager.scheduler.setEvent(event);
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        event.replyEmbeds(embedBuilder.setDescription("Reading spotify playlist.")
-                .setColor(Color.GREEN).build()).queue();
-        int errorCounter = 0;
-        for (MusicPojo musicPojo : musicPojos) {
-            musicPojo.setYoutubeUri(restService.getYoutubeLink(musicPojo).getYoutubeUri());
-            if (musicPojo.getYoutubeUri().equals("403glaxierror")) {
-                errorCounter++;
-                continue;
-            }
-            this.audioPlayerManager.loadItemOrdered(musicManager, musicPojo.getYoutubeUri(), new AudioLoadResultHandler() {
+
+        if (multipleMusicDto.getFailCount() > 0) {
+            event.getHook().sendMessageEmbeds(embedBuilder
+                            .setDescription(multipleMusicDto.getCount() + " tracks read and will be queued soon, " +
+                                    multipleMusicDto.getFailCount() +
+                                    " tracks failed to read because youtube quota exceeded," +
+                                    " please use youtube urls to play songs afterwards for today.")
+                            .setColor(Color.ORANGE)
+                            .build())
+                    .setEphemeral(ephemeral)
+                    .queue();
+        } else {
+            event.getHook().sendMessageEmbeds(new EmbedBuilder()
+                            .setDescription(multipleMusicDto.getCount() + " tracks read and will be queued soon.")
+                            .setColor(Color.GREEN)
+                            .build())
+                    .setEphemeral(ephemeral)
+                    .queue();
+        }
+
+        for (MusicDto musicDto : multipleMusicDto.getMusicDtoList()) {
+            this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
                 @Override
                 public void trackLoaded(AudioTrack track) {
                     musicManager.scheduler.queue(track);
-                    String title = musicPojo.getTitle();
-                    cacheTrack(track, title);
+                    cacheTrack(track, musicDto.getTitle());
                 }
 
                 @Override
@@ -149,25 +167,13 @@ public class PlayerManagerService {
                 }
             });
         }
-        if (errorCounter > 0) {
-            apiLimitExceeded(event.getMessageChannel());
-        }
-        event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder().setDescription(musicPojos.size() - errorCounter + " tracks queued.")
-                .build()).queue();
     }
 
     private void cacheTrack(AudioTrack track, String title) {
         if (title != null) {
-            MusicData musicData = new MusicData(title, track.getInfo().uri);
-            MusicData redisMusicData = trackService.findFirst1ByTitle(musicData.getTitle());
-            if (redisMusicData == null) {
-                trackService.save(musicData);
-            }
+            Music music = new Music(title, track.getInfo().uri);
+            Music dbMusic = musicRepository.findFirstByTitle(music.getTitle());
+            if (dbMusic == null) musicRepository.save(music);
         }
-    }
-
-    private void apiLimitExceeded(MessageChannel channel) {
-        channel.sendMessageEmbeds(new EmbedBuilder().setDescription("Youtube quota has exceeded. " +
-                "Please use youtube links to play music for today.").build()).queue();
     }
 }
