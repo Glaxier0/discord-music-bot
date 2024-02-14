@@ -13,11 +13,11 @@ import javax.persistence.*;
 @Setter
 @ToString
 @NoArgsConstructor
+@SuppressWarnings("JpaDataSourceORMInspection")
 public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     String id;
-    //    @Indexed
     String title;
     @Column(name = "youtube_uri")
     String youtubeUri;
