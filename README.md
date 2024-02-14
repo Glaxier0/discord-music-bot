@@ -10,11 +10,7 @@ From [Google Console](https://console.cloud.google.com/apis/dashboard) create a 
 
 Create a [Spotify App](https://developer.spotify.com/dashboard/applications), get client id and client secret from there.
 
-For playing age restricted videos and you have to set [__Secure-3PSID and __Secure-3PAPISID](https://github.com/Walkyst/lavaplayer-fork/issues/18). 
-
-If you don't want your music bot to play age restricted videos just comment out [this](https://github.com/Glaxier0/discord-music-bot/blob/17d7c784195a0da49ef087a54ca724b7a0476a5c/src/main/java/com/discord/bot/GlaxierBot.java#L51).
-
-Lastly install [redis](https://redis.io/) and create a database .
+You need a psql database with table named "musics"
 
 Just edit [application.properties](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.properties) file and you are ready to go.
 
