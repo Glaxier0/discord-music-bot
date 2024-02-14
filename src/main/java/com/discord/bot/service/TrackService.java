@@ -8,6 +8,6 @@ public interface TrackService {
     void save(MusicData musicData);
     void delete(MusicData musicData);
     Optional<MusicData> findById(String id);
-    MusicData findFirst1ByTitle(String title);
+    MusicData findFirstByTitle(String title);
     void deleteAll();
 }

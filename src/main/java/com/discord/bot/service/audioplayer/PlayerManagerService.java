@@ -175,7 +175,7 @@ public class PlayerManagerService {
     private void cacheTrack(AudioTrack track, String title) {
         if (title != null) {
             MusicData musicData = new MusicData(title, track.getInfo().uri);
-            MusicData redisMusicData = trackService.findFirst1ByTitle(musicData.getTitle());
+            MusicData redisMusicData = trackService.findFirstByTitle(musicData.getTitle());
             if (redisMusicData == null) {
                 trackService.save(musicData);
             }

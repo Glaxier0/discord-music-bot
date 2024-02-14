@@ -28,8 +28,8 @@ public class TrackServiceImpl implements TrackService {
     }
 
     @Override
-    public MusicData findFirst1ByTitle(String title) {
-        return trackRepository.findFirst1ByTitle(title);
+    public MusicData findFirstByTitle(String title) {
+        return trackRepository.findFirstByTitle(title);
     }
 
     @Override
