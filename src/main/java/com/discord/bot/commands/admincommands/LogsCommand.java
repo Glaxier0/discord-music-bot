@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import java.io.File;
 
 public class LogsCommand implements ISlashCommand {
-    String ADMIN = "315403352496275456";
+    final String ADMIN = "315403352496275456";
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {

@@ -6,7 +6,7 @@ Discord API - [JDA Wrapper](https://github.com/DV8FromTheWorld/JDA)
 
 Discord API BOT TOKEN from [here](https://discord.com/developers/applications)
 
-From [Google Console](https://console.cloud.google.com/apis/dashboard) create a project, enable [Youtube API](https://developers.google.com/youtube/v3) and create api key from [Google Console](https://console.cloud.google.com/apis/dashboard).
+From [Google Console](https://console.cloud.google.com/apis/dashboard) create a project, enable [YouTube API](https://developers.google.com/youtube/v3) and create api key from [Google Console](https://console.cloud.google.com/apis/dashboard).
 
 Create a [Spotify App](https://developer.spotify.com/dashboard/applications), get client id and client secret from there.
 

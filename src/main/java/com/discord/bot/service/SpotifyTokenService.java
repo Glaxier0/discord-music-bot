@@ -1,6 +1,6 @@
 package com.discord.bot.service;
 
-import com.discord.bot.dto.Response.Spotify.TokenResponse;
+import com.discord.bot.dto.response.spotify.TokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;

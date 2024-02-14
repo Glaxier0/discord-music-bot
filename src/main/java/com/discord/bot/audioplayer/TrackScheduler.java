@@ -7,19 +7,17 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
-import java.awt.*;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+@SuppressWarnings("CanBeFinal")
 public class TrackScheduler extends AudioEventAdapter {
     public final AudioPlayer player;
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
     public SlashCommandInteractionEvent event;
-    public ButtonInteractionEvent buttonEvent;
     private int COUNT = 0;
 
     public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
@@ -28,10 +26,9 @@ public class TrackScheduler extends AudioEventAdapter {
         this.event = event;
     }
 
-    public TrackScheduler(AudioPlayer player, ButtonInteractionEvent event) {
+    public TrackScheduler(AudioPlayer player) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
-        this.buttonEvent = event;
     }
 
     public void setEvent(SlashCommandInteractionEvent event) {

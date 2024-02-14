@@ -12,6 +12,7 @@ public class TestCommands {
                 //noinspection BusyWait
                 Thread.sleep(200);
             } catch (InterruptedException e) {
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }

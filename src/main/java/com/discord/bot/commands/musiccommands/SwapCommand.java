@@ -29,13 +29,13 @@ public class SwapCommand implements ISlashCommand {
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             var firstOption = event.getOption("songnum1");
             var secondOption = event.getOption("songnum2");
+            assert firstOption != null;
             int first = firstOption.getAsInt() - 1;
+            assert secondOption != null;
             int second = secondOption.getAsInt() - 1;
             int size = musicManager.scheduler.queue.size();
 
-            if (firstOption == null || secondOption == null) {
-                embedBuilder.setDescription("Song numbers can't be null.").setColor(Color.RED);
-            } else if (first >= size || second >= size) {
+            if (first >= size || second >= size) {
                 embedBuilder.setDescription("Please enter a valid queue ids for both of the songs.").setColor(Color.RED);
             } else {
                 if (trackList.size() > 1) {

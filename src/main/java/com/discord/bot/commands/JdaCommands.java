@@ -8,9 +8,10 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 
 public class JdaCommands {
-    private String ephemeralString = "Bot reply will only visible to you if set as TRUE, default value is TRUE.";
     public void addJdaCommands(JDA jda) {
         CommandListUpdateAction globalCommands = jda.updateCommands();
+        String ephemeralString = "Bot reply will only visible to you if set as TRUE, default value is TRUE.";
+
         globalCommands.addCommands(
                 //Music Commands
                 Commands.slash("play", "Play a song on your voice channel.")
