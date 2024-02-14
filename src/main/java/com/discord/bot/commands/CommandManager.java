@@ -9,7 +9,6 @@ import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 
 import java.util.Map;
@@ -17,11 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("CanBeFinal")
 public class CommandManager extends ListenerAdapter {
-    @Autowired
     RestService restService;
-    @Autowired
     PlayerManagerService playerManagerService;
-    @Autowired
     MusicCommandUtils musicCommandUtils;
     private Map<String, ISlashCommand> commandsMap;
 
@@ -29,7 +25,7 @@ public class CommandManager extends ListenerAdapter {
                           MusicCommandUtils musicCommandUtils) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
-        this.musicCommandUtils =  musicCommandUtils;
+        this.musicCommandUtils = musicCommandUtils;
         commandMapper();
     }
 
