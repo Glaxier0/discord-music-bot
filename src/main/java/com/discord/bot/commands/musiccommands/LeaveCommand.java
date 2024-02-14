@@ -23,7 +23,7 @@ public class LeaveCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
             if (event.getGuild() != null) {
                 AudioManager audioManager = event.getGuild().getAudioManager();
                 musicManager.scheduler.repeating = false;

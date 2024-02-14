@@ -25,7 +25,7 @@ public class SwapCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
             var firstOption = event.getOption("songnum1");
             var secondOption = event.getOption("songnum2");

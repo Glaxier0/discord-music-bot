@@ -15,7 +15,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -39,28 +38,10 @@ public class PlayerManagerService {
         this.musicRepository = musicRepository;
     }
 
-    public GuildMusicManager getMusicManager(SlashCommandInteractionEvent event) {
-        Guild guild = event.getGuild();
-
+    public GuildMusicManager getMusicManager(Guild guild) {
         if (guild != null) {
             return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, event);
-
-                guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
-
-                return guildMusicManager;
-            });
-        }
-
-        return null;
-    }
-
-    public GuildMusicManager getMusicManager(ButtonInteractionEvent event) {
-        Guild guild = event.getGuild();
-
-        if (guild != null) {
-            return this.musicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager);
+                final GuildMusicManager guildMusicManager = new GuildMusicManager(this.audioPlayerManager, guild);
 
                 guild.getAudioManager().setSendingHandler(guildMusicManager.getSendHandler());
 
@@ -72,7 +53,7 @@ public class PlayerManagerService {
     }
 
     public void loadAndPlay(SlashCommandInteractionEvent event, MusicDto musicDto, boolean ephemeral) {
-        final GuildMusicManager musicManager = this.getMusicManager(event);
+        final GuildMusicManager musicManager = this.getMusicManager(event.getGuild());
         EmbedBuilder embedBuilder = new EmbedBuilder();
         this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
             @Override
@@ -119,8 +100,7 @@ public class PlayerManagerService {
 
     @Async
     public void loadMultipleAndPlay(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
-        final GuildMusicManager musicManager = this.getMusicManager(event);
-        musicManager.scheduler.setEvent(event);
+        final GuildMusicManager musicManager = this.getMusicManager(event.getGuild());
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         if (multipleMusicDto.getFailCount() > 0) {

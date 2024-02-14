@@ -56,7 +56,7 @@ public class PlayCommand implements ISlashCommand {
             int trackSize = multipleMusicDto.getMusicDtoList().size();
             if (trackSize != 0) {
                 if (botChannel == null) {
-                    GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+                    GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
                     utils.playerCleaner(musicManager);
 
                     if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
@@ -90,8 +90,7 @@ public class PlayCommand implements ISlashCommand {
         var member = event.getMember();
         if (member != null) {
             if (self) {
-                var guild = member.getGuild();
-                member = guild.getSelfMember();
+                member = member.getGuild().getSelfMember();
             }
             var voiceState = member.getVoiceState();
             if (voiceState != null) {

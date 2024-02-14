@@ -5,8 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.entities.Guild;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -17,22 +16,13 @@ public class TrackScheduler extends AudioEventAdapter {
     public final AudioPlayer player;
     public BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
-    public SlashCommandInteractionEvent event;
+    private final Guild guild;
     private int COUNT = 0;
 
-    public TrackScheduler(AudioPlayer player, SlashCommandInteractionEvent event) {
+    public TrackScheduler(AudioPlayer player, Guild guild) {
         this.player = player;
         this.queue = new LinkedBlockingQueue<>();
-        this.event = event;
-    }
-
-    public TrackScheduler(AudioPlayer player) {
-        this.player = player;
-        this.queue = new LinkedBlockingQueue<>();
-    }
-
-    public void setEvent(SlashCommandInteractionEvent event) {
-        this.event = event;
+        this.guild = guild;
     }
 
     public void queue(AudioTrack track) {
@@ -59,9 +49,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public void nextTrack() {
         this.player.startTrack(this.queue.poll(), false);
         if (player.getPlayingTrack() == null) {
-            if (event.getGuild() != null) {
-                event.getGuild().getAudioManager().closeAudioConnection();
-            }
+            guild.getAudioManager().closeAudioConnection();
         }
         if (repeating) {
             repeating = false;
@@ -72,8 +60,8 @@ public class TrackScheduler extends AudioEventAdapter {
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if (COUNT >= 1) {
             COUNT = 0;
-            event.getMessageChannel().sendMessageEmbeds(new EmbedBuilder()
-                    .setDescription("Track failed to start.").build()).queue();
+            //noinspection CallToPrintStackTrace
+            exception.printStackTrace();
             return;
         }
         player.startTrack(track.makeClone(), false);
@@ -82,21 +70,19 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (event.getGuild() != null) {
-            if (event.getGuild().getSelfMember().getVoiceState() != null
-                    && event.getGuild().getSelfMember().getVoiceState().getChannel() != null) {
-                if (event.getGuild().getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
-                    event.getGuild().getAudioManager().closeAudioConnection();
-                    return;
-                }
+        if (guild.getSelfMember().getVoiceState() != null && guild.getSelfMember().getVoiceState().getChannel() != null) {
+            // If bot is alone in the voice
+            if (guild.getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+                guild.getAudioManager().closeAudioConnection();
+                return;
             }
-            if (endReason.mayStartNext) {
-                if (this.repeating) {
-                    this.player.startTrack(track.makeClone(), false);
-                    return;
-                }
-                nextTrack();
+        }
+        if (endReason.mayStartNext) {
+            if (this.repeating) {
+                this.player.startTrack(track.makeClone(), false);
+                return;
             }
+            nextTrack();
         }
     }
 }

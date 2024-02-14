@@ -23,7 +23,7 @@ public class NowPlayingCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            AudioTrack track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
+            AudioTrack track = playerManagerService.getMusicManager(event.getGuild()).audioPlayer.getPlayingTrack();
 
             if (track != null) {
                 long durationSeconds = TimeUnit.MILLISECONDS.toSeconds(track.getDuration());

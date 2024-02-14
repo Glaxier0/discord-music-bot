@@ -38,7 +38,7 @@ public class QueueButton implements IButtonInteraction {
         int currentPage = Integer.parseInt(title.substring(title.lastIndexOf("Page")
                 + "Page".length()).trim());
 
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
 
         int pageSize = 20;
         int totalTracks = queue.size();
@@ -54,7 +54,7 @@ public class QueueButton implements IButtonInteraction {
     private void updateEmbed(ButtonInteractionEvent event, int totalPages, int page) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event).scheduler.queue;
+        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
         var trackList = queue.stream().toList();
 
         if (queue.isEmpty()) {

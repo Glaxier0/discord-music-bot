@@ -21,7 +21,7 @@ public class PauseCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            playerManagerService.getMusicManager(event).audioPlayer.setPaused(true);
+            playerManagerService.getMusicManager(event.getGuild()).audioPlayer.setPaused(true);
             embedBuilder.setDescription("Song paused").setColor(Color.GREEN);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 

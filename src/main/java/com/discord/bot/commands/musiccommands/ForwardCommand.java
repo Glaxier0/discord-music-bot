@@ -21,7 +21,7 @@ public class ForwardCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            var track = playerManagerService.getMusicManager(event).audioPlayer.getPlayingTrack();
+            var track = playerManagerService.getMusicManager(event.getGuild()).audioPlayer.getPlayingTrack();
             var option = event.getOption("sec");
 
             if (option != null) {

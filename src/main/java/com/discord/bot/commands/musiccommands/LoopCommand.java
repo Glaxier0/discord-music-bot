@@ -21,8 +21,8 @@ public class LoopCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            boolean repeat = playerManagerService.getMusicManager(event).scheduler.repeating;
-            playerManagerService.getMusicManager(event).scheduler.repeating = !repeat;
+            boolean repeat = playerManagerService.getMusicManager(event.getGuild()).scheduler.repeating;
+            playerManagerService.getMusicManager(event.getGuild()).scheduler.repeating = !repeat;
 
             if (!repeat) embedBuilder.setDescription(":white_check_mark: Track loop enabled.").setColor(Color.GREEN);
             else embedBuilder.setDescription(":x: Track loop disabled.").setColor(Color.RED);
