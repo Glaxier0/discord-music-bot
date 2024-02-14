@@ -3,14 +3,14 @@ package com.discord.bot.commands;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
+import com.discord.bot.repository.MusicRepository;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.RestService;
-import com.discord.bot.service.TrackService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.lang.NonNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,20 +19,20 @@ public class CommandManager extends ListenerAdapter {
     RestService restService;
     PlayerManagerService playerManagerService;
     MusicCommandUtils musicCommandUtils;
-    TrackService trackService;
+    MusicRepository musicRepository;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-                          MusicCommandUtils musicCommandUtils, TrackService trackService) {
+                          MusicCommandUtils musicCommandUtils, MusicRepository musicRepository) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils =  musicCommandUtils;
-        this.trackService = trackService;
+        this.musicRepository = musicRepository;
         commandMapper();
     }
 
     @Override
-    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         String commandName = event.getName();
 
         ISlashCommand command;
@@ -42,7 +42,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     @Override
-    public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
+    public void onButtonInteraction(@NonNull ButtonInteractionEvent event) {
         IButtonInteraction interaction = new QueueButton(playerManagerService, musicCommandUtils);
         interaction.click(event);
     }
@@ -53,7 +53,7 @@ public class CommandManager extends ListenerAdapter {
         commandsMap.put("guilds", new GuildsCommand());
         commandsMap.put("logs", new LogsCommand());
         //Music Commands
-        commandsMap.put("play", new PlayCommand(restService, playerManagerService, trackService));
+        commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils));
         commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("forward", new ForwardCommand(playerManagerService, musicCommandUtils));
         commandsMap.put("rewind", new RewindCommand(playerManagerService, musicCommandUtils));
