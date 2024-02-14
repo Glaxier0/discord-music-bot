@@ -3,6 +3,7 @@ package com.discord.bot;
 import com.discord.bot.commands.CommandManager;
 import com.discord.bot.commands.JdaCommands;
 import com.discord.bot.commands.TestCommands;
+import com.discord.bot.repository.MusicRepository;
 import com.discord.bot.service.*;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import net.dv8tion.jda.api.JDA;
@@ -20,7 +21,7 @@ public class GlaxierBot {
     RestService restService;
     PlayerManagerService playerManagerService;
     MusicCommandUtils musicCommandUtils;
-    TrackService trackService;
+    MusicRepository musicRepository;
     SpotifyTokenService spotifyTokenService;
 
     @Value("${discord_bot_token}")
@@ -33,10 +34,12 @@ public class GlaxierBot {
     private String PAPISID;
 
     public GlaxierBot(RestService restService, PlayerManagerService playerManagerService,
-                      MusicCommandUtils musicCommandUtils, SpotifyTokenService spotifyTokenService) {
+                      MusicCommandUtils musicCommandUtils, MusicRepository musicRepository,
+                      SpotifyTokenService spotifyTokenService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
+        this.musicRepository = musicRepository;
         this.spotifyTokenService = spotifyTokenService;
     }
 
@@ -44,7 +47,7 @@ public class GlaxierBot {
     public void startDiscordBot() {
         JDA jda = JDABuilder.createDefault(DISCORD_TOKEN)
                 .addEventListeners(
-                        new CommandManager(restService, playerManagerService, musicCommandUtils, trackService))
+                        new CommandManager(restService, playerManagerService, musicCommandUtils, musicRepository))
                 .setActivity(Activity.listening("Type /mhelp")).build();
         new JdaCommands().addJdaCommands(jda);
         new TestCommands().addTestCommands(jda, TEST_SERVER);

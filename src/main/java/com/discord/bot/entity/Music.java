@@ -4,23 +4,25 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.index.Indexed;
 
-@RedisHash("music")
+import javax.persistence.*;
+
+@Table(name = "musics")
+@Entity
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class MusicData {
+public class Music {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     String id;
-    @Indexed
+    //    @Indexed
     String title;
+    @Column(name = "youtube_uri")
     String youtubeUri;
 
-    public MusicData(String title, String youtubeUri) {
+    public Music(String title, String youtubeUri) {
         this.title = title;
         this.youtubeUri = youtubeUri;
     }
