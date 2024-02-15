@@ -24,6 +24,7 @@ public class LeaveCommand implements ISlashCommand {
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
+            @SuppressWarnings("DataFlowIssue")
             AudioManager audioManager = event.getGuild().getAudioManager();
             utils.playerCleaner(musicManager);
             audioManager.closeAudioConnection();
