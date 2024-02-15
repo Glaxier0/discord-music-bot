@@ -9,7 +9,7 @@ version = '1.0'
 project.archivesBaseName = 'bot'
 
 java {
-	sourceCompatibility = '21'
+	sourceCompatibility = '17'
 }
 
 repositories {
