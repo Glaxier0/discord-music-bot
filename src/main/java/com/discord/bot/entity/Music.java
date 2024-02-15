@@ -1,19 +1,18 @@
 package com.discord.bot.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
-
+@SuppressWarnings("JpaDataSourceORMInspection")
 @Table(name = "musics")
 @Entity
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-@SuppressWarnings("JpaDataSourceORMInspection")
 public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
