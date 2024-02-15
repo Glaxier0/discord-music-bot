@@ -18,37 +18,45 @@ public class JdaCommands {
                         .addOptions(new OptionData(OptionType.STRING, "query", "Song url or name.")
                                         .setRequired(true),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false)),
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("skip", "Skip the current song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("forward", "Forward the current song x seconds.")
                         .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
                                         .setMinValue(1)
                                         .setRequired(true),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false)),
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("rewind", "Rewind the current song x seconds.")
                         .addOptions(new OptionData(OptionType.INTEGER, "sec", "seconds")
                                         .setMinValue(1)
                                         .setRequired(true),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false)),
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("pause", "Pause the current song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("resume", "Resume the paused song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("leave", "Make bot leave the voice channel.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("queue", "List the song queue.")
                         .addOptions(new OptionData(OptionType.INTEGER, "page", "Displayed page of the queue.")
                                         .setMinValue(1)
                                         .setRequired(false),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false)),
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("swap", "Swap order of two the songs in queue")
                         .addOptions(new OptionData(OptionType.INTEGER, "songnum1",
                                         "Song number in the queue to be changed.")
@@ -59,13 +67,16 @@ public class JdaCommands {
                                         .setMinValue(1)
                                         .setRequired(true),
                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false)),
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("shuffle", "Shuffle the queue.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("loop", "Loop the current song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("remove", "Remove song(s) from the queue.")
                         .addSubcommands(new SubcommandData("single", "Remove a song from the queue.")
                                         .addOptions(new OptionData(OptionType.INTEGER, "songnum", "Song number to be removed from queue")
@@ -85,13 +96,23 @@ public class JdaCommands {
                                                         .setRequired(true),
                                                 new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
                                                         .setRequired(false)),
-                                new SubcommandData("all", "Clear the queue.")),
+                                new SubcommandData("all", "Clear the queue."))
+                        .setGuildOnly(true),
                 Commands.slash("nowplaying", "Show the currently playing song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                .setRequired(false)),
+                                .setRequired(false))
+                        .setGuildOnly(true),
+                Commands.slash("volume", "Show the currently playing song.")
+                        .addOptions(new OptionData(OptionType.INTEGER, "volume",
+                                        "Player volume.")
+                                        .setRequired(true),
+                                new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
+                                        .setRequired(false))
+                        .setGuildOnly(true),
                 Commands.slash("mhelp", "Help page for the music commands.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
                                 .setRequired(false))
-        ).queue();
+                        .setGuildOnly(true)
+                ).queue();
     }
 }
