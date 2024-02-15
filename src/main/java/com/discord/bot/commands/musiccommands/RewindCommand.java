@@ -24,17 +24,15 @@ public class RewindCommand implements ISlashCommand {
             var track = playerManagerService.getMusicManager(event.getGuild()).audioPlayer.getPlayingTrack();
             var option = event.getOption("sec");
 
-            if (option != null) {
-                var seconds = option.getAsInt();
-                var songPosition = track.getPosition();
-                if (songPosition - (seconds * 1000L) <= 0) {
-                    track.setPosition(0);
-                    embedBuilder.setDescription("Song rewound to the start.").setColor(Color.GREEN);
-                } else {
-                    track.setPosition(songPosition - (seconds * 1000L));
-                    embedBuilder.setDescription("Song rewound by " + seconds + " seconds.").setColor(Color.GREEN);
-                }
-            } else embedBuilder.setDescription("Seconds can't be null.").setColor(Color.RED);
+            var seconds = option != null ? option.getAsInt() : 0;
+            var songPosition = track.getPosition();
+            if (songPosition - (seconds * 1000L) <= 0) {
+                track.setPosition(0);
+                embedBuilder.setDescription("Song rewound to the start.").setColor(Color.GREEN);
+            } else {
+                track.setPosition(songPosition - (seconds * 1000L));
+                embedBuilder.setDescription("Song rewound by " + seconds + " seconds.").setColor(Color.GREEN);
+            }
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
         event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();

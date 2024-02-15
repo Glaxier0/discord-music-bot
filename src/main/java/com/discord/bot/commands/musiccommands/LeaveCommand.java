@@ -24,16 +24,11 @@ public class LeaveCommand implements ISlashCommand {
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-            if (event.getGuild() != null) {
-                AudioManager audioManager = event.getGuild().getAudioManager();
-                musicManager.scheduler.repeating = false;
-                musicManager.scheduler.player.setPaused(false);
-                musicManager.scheduler.player.stopTrack();
-                musicManager.scheduler.queue.clear();
-                audioManager.closeAudioConnection();
+            AudioManager audioManager = event.getGuild().getAudioManager();
+            utils.playerCleaner(musicManager);
+            audioManager.closeAudioConnection();
 
-                embedBuilder.setDescription("Bye.");
-            }
+            embedBuilder.setDescription("Bye.").setColor(Color.GREEN);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
         event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
