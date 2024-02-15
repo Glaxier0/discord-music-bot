@@ -26,7 +26,7 @@ public class ShuffleCommand implements ISlashCommand {
         boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
-            GuildMusicManager musicManager = playerManagerService.getMusicManager(event);
+            GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
             List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
 
             if (trackList.size() > 1) {

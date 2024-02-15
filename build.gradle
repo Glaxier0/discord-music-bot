@@ -6,7 +6,7 @@ plugins {
 
 group = 'com.discord'
 version = '1.0'
-project.archivesBaseName = "bot"
+project.archivesBaseName = 'bot'
 
 repositories {
 	maven {

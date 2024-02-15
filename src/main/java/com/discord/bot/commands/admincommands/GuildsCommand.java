@@ -11,7 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class GuildsCommand implements ISlashCommand {
-    String ADMIN = "315403352496275456";
+    final String ADMIN = "315403352496275456";
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
@@ -31,6 +31,7 @@ public class GuildsCommand implements ISlashCommand {
                 boolean isDeleted = guildsFile.delete();
                 System.out.println("Guild file deletion status: " + isDeleted);
             } catch (IOException | InterruptedException e) {
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }

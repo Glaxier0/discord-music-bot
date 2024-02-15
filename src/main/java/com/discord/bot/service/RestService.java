@@ -1,10 +1,10 @@
 package com.discord.bot.service;
 
-import com.discord.bot.dto.Response.Spotify.SpotifyItemDto;
-import com.discord.bot.dto.Response.Spotify.SpotifyPlaylistResponse;
-import com.discord.bot.dto.Response.Spotify.SpotifyTrackResponse;
-import com.discord.bot.dto.Response.Spotify.TrackDto;
-import com.discord.bot.dto.Response.Youtube.YoutubeResponse;
+import com.discord.bot.dto.response.spotify.SpotifyItemDto;
+import com.discord.bot.dto.response.spotify.SpotifyPlaylistResponse;
+import com.discord.bot.dto.response.spotify.SpotifyTrackResponse;
+import com.discord.bot.dto.response.spotify.TrackDto;
+import com.discord.bot.dto.response.youtube.YoutubeResponse;
 import com.discord.bot.repository.MusicRepository;
 import com.discord.bot.dto.MultipleMusicDto;
 import com.discord.bot.dto.MusicDto;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("CanBeFinal")
 @Service
 public class RestService {
     public static String SPOTIFY_TOKEN;

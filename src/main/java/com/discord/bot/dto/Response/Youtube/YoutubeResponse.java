@@ -1,4 +1,4 @@
-package com.discord.bot.dto.Response.Youtube;
+package com.discord.bot.dto.response.youtube;
 
 import lombok.*;
 

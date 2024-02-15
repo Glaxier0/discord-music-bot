@@ -3,7 +3,6 @@ package com.discord.bot.commands;
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
-import com.discord.bot.repository.MusicRepository;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
@@ -15,19 +14,18 @@ import org.springframework.lang.NonNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings("CanBeFinal")
 public class CommandManager extends ListenerAdapter {
     RestService restService;
     PlayerManagerService playerManagerService;
     MusicCommandUtils musicCommandUtils;
-    MusicRepository musicRepository;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-                          MusicCommandUtils musicCommandUtils, MusicRepository musicRepository) {
+                          MusicCommandUtils musicCommandUtils) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
-        this.musicCommandUtils =  musicCommandUtils;
-        this.musicRepository = musicRepository;
+        this.musicCommandUtils = musicCommandUtils;
         commandMapper();
     }
 
