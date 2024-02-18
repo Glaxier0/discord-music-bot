@@ -1,6 +1,6 @@
 # discord-music-bot
 
-Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and Redis database.
+Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and PostgreSQL database.
 
 Discord API - [JDA Wrapper](https://github.com/DV8FromTheWorld/JDA)
 
