@@ -1,10 +1,13 @@
 spring:
   datasource:
-    name:
-    password:
-    url:
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://localhost:5432/music_bot
   main:
     web-application-type: none
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 logging:
   level:
