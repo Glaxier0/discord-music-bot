@@ -1,28 +1,20 @@
 package com.discord.bot.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Table(name = "musics")
 @Entity
+@AllArgsConstructor
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    String id;
-    String title;
+    private int id;
+    private String title;
     @Column(name = "youtube_uri")
-    String youtubeUri;
-
-    public Music(String title, String youtubeUri) {
-        this.title = title;
-        this.youtubeUri = youtubeUri;
-    }
+    private String youtubeUri;
 }

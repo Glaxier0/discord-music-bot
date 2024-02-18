@@ -28,14 +28,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("CanBeFinal")
 @Service
 public class RestService {
-    public static String SPOTIFY_TOKEN;
+    public static String spotifyToken;
     private final RestTemplate restTemplate;
-    MusicRepository musicRepository;
-    @Value("${youtube_api_key}")
-    private String YOUTUBE_API_KEY;
+    final MusicRepository musicRepository;
+
+    @Value("${youtube.api.key}")
+    private String youtubeApiKey;
 
     public RestService(MusicRepository musicRepository) {
         this.restTemplate = new RestTemplateBuilder().build();
@@ -124,7 +124,7 @@ public class RestService {
     private SpotifyPlaylistResponse getSpotifyPlaylistData(String spotifyUrl) {
         URI spotifyUri = createUri(spotifyUrl);
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(SPOTIFY_TOKEN);
+        headers.setBearerAuth(spotifyToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
         return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyPlaylistResponse.class).getBody();
     }
@@ -132,7 +132,7 @@ public class RestService {
     private SpotifyTrackResponse getSpotifyTrackData(String spotifyUrl) {
         URI spotifyUri = createUri(spotifyUrl);
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(SPOTIFY_TOKEN);
+        headers.setBearerAuth(spotifyToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
         return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyTrackResponse.class).getBody();
     }
@@ -143,7 +143,7 @@ public class RestService {
                 "&maxResults=1&q=" +
                 encodedMusicName +
                 "&key=" +
-                YOUTUBE_API_KEY;
+                youtubeApiKey;
 
         return createUri(youtubeUrl);
     }

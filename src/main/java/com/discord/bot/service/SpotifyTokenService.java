@@ -14,10 +14,11 @@ import java.net.URISyntaxException;
 
 @Service
 public class SpotifyTokenService {
-    @Value("${spotify_client_id}")
-    private String CLIENT_ID;
-    @Value("${spotify_client_secret}")
-    private String CLIENT_SECRET;
+    @Value("${spotify.client.id}")
+    private String clientId;
+
+    @Value("${spotify.client.secret}")
+    private String clientSecret;
 
     public void getAccessToken() {
         RestTemplate restTemplate = new RestTemplateBuilder().build();
@@ -26,13 +27,13 @@ public class SpotifyTokenService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> bodyParamMap = new LinkedMultiValueMap<>();
         bodyParamMap.add("grant_type", "client_credentials");
-        bodyParamMap.add("client_id", CLIENT_ID);
-        bodyParamMap.add("client_secret", CLIENT_SECRET);
+        bodyParamMap.add("client_id", clientId);
+        bodyParamMap.add("client_secret", clientSecret);
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(bodyParamMap, headers);
         TokenResponse tokenResponse = restTemplate.exchange(uri, HttpMethod.POST, entity, TokenResponse.class).getBody();
         assert tokenResponse != null;
-        RestService.SPOTIFY_TOKEN = tokenResponse.getAccessToken();
+        RestService.spotifyToken = tokenResponse.getAccessToken();
     }
 
     private URI createUri() {
