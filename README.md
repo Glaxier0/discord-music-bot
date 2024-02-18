@@ -10,7 +10,7 @@ From [Google Console](https://console.cloud.google.com/apis/dashboard) create a 
 
 Create a [Spotify App](https://developer.spotify.com/dashboard/applications), get client id and client secret from there.
 
-Edit [application.properties](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.yaml) file.
+Edit [application.yaml](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.yaml) file.
 
 Use docker command below before running bot, it will create local PostgreSQL database for you.
 ```
