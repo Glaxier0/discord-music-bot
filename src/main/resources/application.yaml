@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    name:
+    password:
+    url:
+  main:
+    web-application-type: none
+
+logging:
+  level:
+    root: info
+
+# noinspection SpringBootApplicationYaml
+discord:
+  bot:
+    token:
+  admin:
+    server:
+      id: your_admin_server
+    user:
+      id: your_id
+# noinspection SpringBootApplicationYaml
+youtube:
+  api:
+    key:
+spotify:
+  client:
+    secret:
+    id:
