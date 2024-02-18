@@ -1,6 +1,6 @@
 # discord-music-bot
 
-Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and Redis database.
+Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and PostgreSQL database.
 
 Discord API - [JDA Wrapper](https://github.com/DV8FromTheWorld/JDA)
 
@@ -10,8 +10,11 @@ From [Google Console](https://console.cloud.google.com/apis/dashboard) create a 
 
 Create a [Spotify App](https://developer.spotify.com/dashboard/applications), get client id and client secret from there.
 
-You need a psql database with table named "musics"
+Edit [application.yaml](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.yaml) file.
 
-Just edit [application.properties](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.properties) file and you are ready to go.
+Use docker command below before running bot, it will create local PostgreSQL database for you.
+```
+docker compose up
+```
 
 For bot usage type /mhelp.
