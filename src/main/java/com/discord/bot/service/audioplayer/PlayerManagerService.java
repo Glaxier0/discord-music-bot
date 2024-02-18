@@ -15,6 +15,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +25,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("CanBeFinal")
 @Service
 public class PlayerManagerService {
+    private final static Logger logger = LoggerFactory.getLogger(PlayerManagerService.class);
     private final Map<Long, GuildMusicManager> musicManagers;
     private final AudioPlayerManager audioPlayerManager;
-    MusicRepository musicRepository;
+    final MusicRepository musicRepository;
 
     public PlayerManagerService(MusicRepository musicRepository) {
         this.musicManagers = new HashMap<>();
@@ -87,13 +89,12 @@ public class PlayerManagerService {
 
             @Override
             public void noMatches() {
-                System.out.println("No match found");
+                logger.warn("No match is found.");
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                //noinspection CallToPrintStackTrace
-                exception.printStackTrace();
+                logger.error("Track load failed.", exception);
             }
         });
     }
@@ -137,13 +138,12 @@ public class PlayerManagerService {
 
                 @Override
                 public void noMatches() {
-                    System.out.println("No match found");
+                    logger.warn("No match is found.");
                 }
 
                 @Override
                 public void loadFailed(FriendlyException exception) {
-                    //noinspection CallToPrintStackTrace
-                    exception.printStackTrace();
+                    logger.error("Track load failed.", exception);
                 }
             });
         }

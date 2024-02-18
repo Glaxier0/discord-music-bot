@@ -6,15 +6,17 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.Guild;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-@SuppressWarnings("CanBeFinal")
 public class TrackScheduler extends AudioEventAdapter {
+    private final static Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
     public final AudioPlayer player;
-    public BlockingQueue<AudioTrack> queue;
+    public final BlockingQueue<AudioTrack> queue;
     public boolean repeating = false;
     private final Guild guild;
     private int COUNT = 0;
@@ -30,7 +32,7 @@ public class TrackScheduler extends AudioEventAdapter {
             boolean offerSuccess = this.queue.offer(track);
 
             if (!offerSuccess) {
-                System.err.println("Queue is full, could not add track: " + track.getInfo().title);
+                logger.error("Queue is full, could not add track: " + track.getInfo().title);
             }
         }
     }
@@ -41,7 +43,7 @@ public class TrackScheduler extends AudioEventAdapter {
                 boolean offerSuccess = this.queue.offer(track);
 
                 if (!offerSuccess)
-                    System.out.println("Queue is full, could not add track and tracks after: " + track.getInfo().title);
+                    logger.error("Queue is full, could not add track and tracks after: " + track.getInfo().title);
             }
         }
     }
@@ -60,8 +62,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
         if (COUNT >= 1) {
             COUNT = 0;
-            //noinspection CallToPrintStackTrace
-            exception.printStackTrace();
+            logger.error("Error occurred", exception);
             return;
         }
         player.startTrack(track.makeClone(), false);

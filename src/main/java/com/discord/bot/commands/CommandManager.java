@@ -14,18 +14,19 @@ import org.springframework.lang.NonNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("CanBeFinal")
 public class CommandManager extends ListenerAdapter {
-    RestService restService;
-    PlayerManagerService playerManagerService;
-    MusicCommandUtils musicCommandUtils;
+    final RestService restService;
+    final PlayerManagerService playerManagerService;
+    final MusicCommandUtils musicCommandUtils;
+    private final String adminUserId;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-                          MusicCommandUtils musicCommandUtils) {
+                          MusicCommandUtils musicCommandUtils, String adminUserId) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
+        this.adminUserId = adminUserId;
         commandMapper();
     }
 
@@ -48,8 +49,8 @@ public class CommandManager extends ListenerAdapter {
     private void commandMapper() {
         commandsMap = new ConcurrentHashMap<>();
         //Admin Commands
-        commandsMap.put("guilds", new GuildsCommand());
-        commandsMap.put("logs", new LogsCommand());
+        commandsMap.put("guilds", new GuildsCommand(adminUserId));
+        commandsMap.put("logs", new LogsCommand(adminUserId));
         //Music Commands
         commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils));
         commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils));
