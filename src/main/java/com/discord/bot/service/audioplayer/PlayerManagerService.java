@@ -151,7 +151,7 @@ public class PlayerManagerService {
 
     private void saveTrack(AudioTrack track, String title) {
         if (title != null) {
-            Music music = new Music(title, track.getInfo().uri);
+            Music music = new Music(0, title, track.getInfo().uri);
             Music dbMusic = musicRepository.findFirstByTitle(music.getTitle());
             if (dbMusic == null) musicRepository.save(music);
         }
