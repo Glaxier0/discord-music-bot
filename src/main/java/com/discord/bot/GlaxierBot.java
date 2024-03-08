@@ -31,7 +31,7 @@ public class GlaxierBot {
     @Value("${discord.admin.server.id}")
     private String adminServerId;
 
-    @Value("discord.admin.user.id")
+    @Value("${discord.admin.user.id}")
     private String adminUserId;
 
     public GlaxierBot(RestService restService, PlayerManagerService playerManagerService,

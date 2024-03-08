@@ -1,7 +1,7 @@
 plugins {
-	id 'org.springframework.boot' version '3.2.2'
-	id 'io.spring.dependency-management' version '1.1.4'
-	id 'java'
+    id 'org.springframework.boot' version '3.2.2'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
 }
 
 group = 'com.discord'
@@ -10,29 +10,33 @@ version = '1.0'
 project.archivesBaseName = 'bot'
 
 java {
-	sourceCompatibility = '17'
+    sourceCompatibility = '17'
 }
 
 repositories {
-	maven {
-		url 'https://m2.dv8tion.net/releases'
-	}
-	maven {
-		url 'https://jitpack.io'
-	}
-	mavenCentral()
+    maven {
+        url 'https://m2.dv8tion.net/releases'
+    }
+    maven {
+        url 'https://jitpack.io'
+    }
+    maven {
+        url'https://s01.oss.sonatype.org/content/repositories/snapshots'
+    }
+
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.postgresql:postgresql'
-	annotationProcessor 'org.projectlombok:lombok'
-	implementation 'dev.arbjerg:lavaplayer:2.1.0'
-	implementation 'net.dv8tion:JDA:5.0.0-beta.20'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'dev.arbjerg:lavaplayer:727959e9f621fc457b3a5adafcfffb55fdeaa538-SNAPSHOT'
+    implementation 'net.dv8tion:JDA:5.0.0-beta.20'
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
