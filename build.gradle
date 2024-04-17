@@ -33,7 +33,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
-    implementation 'dev.arbjerg:lavaplayer:727959e9f621fc457b3a5adafcfffb55fdeaa538-SNAPSHOT'
+    implementation 'dev.arbjerg:lavaplayer:2.1.1'
     implementation 'net.dv8tion:JDA:5.0.0-beta.20'
 }
 

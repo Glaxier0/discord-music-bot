@@ -9,6 +9,9 @@ import com.discord.bot.repository.MusicRepository;
 import com.discord.bot.dto.MultipleMusicDto;
 import com.discord.bot.dto.MusicDto;
 import com.discord.bot.entity.Music;
+import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -30,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class RestService {
+    private final static Logger logger = LoggerFactory.getLogger(RestService.class);
     public static String spotifyToken;
     private final RestTemplate restTemplate;
     final MusicRepository musicRepository;
@@ -42,7 +46,9 @@ public class RestService {
         this.musicRepository = musicRepository;
     }
 
-    public List<MusicDto> getTracksFromSpotify(String spotifyUrl) {
+    public List<MusicDto> getTracksFromSpotify(String spotifyUrl) throws BadRequestException {
+        logger.info("Getting tracks from spotify.");
+
         String id;
         List<MusicDto> musicDtos = new ArrayList<>();
 
@@ -51,6 +57,10 @@ public class RestService {
             spotifyUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))";
             SpotifyPlaylistResponse spotifyPlaylistResponse = getSpotifyPlaylistData(spotifyUrl);
             List<SpotifyItemDto> items = spotifyPlaylistResponse.getSpotifyItemDtoList();
+
+            if (items.size() > 50) {
+                throw new BadRequestException("Max allowed playlist size is 50.");
+            }
 
             for (SpotifyItemDto item : items) {
                 TrackDto trackDtoList = item.getTrackDtoList();
@@ -92,6 +102,7 @@ public class RestService {
     }
 
     public MultipleMusicDto getYoutubeUrl(List<MusicDto> musicDtos) {
+        logger.info("Getting youtube urls of spotify tracks. Size: {}", musicDtos.size());
         AtomicInteger count = new AtomicInteger(0);
         AtomicInteger failCount = new AtomicInteger(0);
 

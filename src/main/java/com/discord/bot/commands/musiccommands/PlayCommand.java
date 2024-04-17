@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import org.apache.coyote.BadRequestException;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -33,7 +34,18 @@ public class PlayCommand implements ISlashCommand {
 
         assert queryOption != null;
         String query = queryOption.getAsString().trim();
-        MultipleMusicDto multipleMusicDto = getSongUrl(query);
+        MultipleMusicDto multipleMusicDto;
+        try {
+            multipleMusicDto = getSongUrl(query);
+        } catch (BadRequestException exception) {
+            event.getHook().sendMessageEmbeds(new EmbedBuilder()
+                            .setDescription("The maximum allowed Spotify playlist size is 50.")
+                            .setColor(Color.RED)
+                            .build())
+                    .setEphemeral(ephemeral)
+                    .queue();
+            return;
+        }
         if (multipleMusicDto.getCount() == 0) {
             event.getHook().sendMessageEmbeds(new EmbedBuilder()
                             .setDescription("Youtube quota has exceeded. " +
@@ -101,7 +113,7 @@ public class PlayCommand implements ISlashCommand {
         return audioChannel;
     }
 
-    private MultipleMusicDto getSongUrl(String query) {
+    private MultipleMusicDto getSongUrl(String query) throws BadRequestException {
         List<MusicDto> musicDtos = new ArrayList<>();
         if (query.contains("https://www.youtube.com/shorts/")) query = youtubeShortsToVideo(query);
         if (isSupportedUrl(query)) {
