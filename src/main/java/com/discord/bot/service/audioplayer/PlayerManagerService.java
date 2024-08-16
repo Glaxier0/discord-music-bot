@@ -12,11 +12,15 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.lavalink.youtube.YoutubeAudioSourceManager;
+import dev.lavalink.youtube.clients.Web;
+import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +36,23 @@ public class PlayerManagerService {
     private final AudioPlayerManager audioPlayerManager;
     final MusicRepository musicRepository;
 
+    @Value("${youtube.poToken}")
+    private String poToken;
+    @Value("${youtube.visitorData}")
+    private String visitorData;
+
     public PlayerManagerService(MusicRepository musicRepository) {
         this.musicManagers = new HashMap<>();
         this.audioPlayerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(this.audioPlayerManager);
-        AudioSourceManagers.registerLocalSource(this.audioPlayerManager);
+        YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
+        audioPlayerManager.registerSourceManager(youtubeAudioSourceManager);
+        AudioSourceManagers.registerRemoteSources(this.audioPlayerManager, com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager.class);
         this.musicRepository = musicRepository;
+    }
+
+    @PostConstruct
+    private void SetYoutubeToken() {
+        Web.setPoTokenAndVisitorData(poToken, visitorData);
     }
 
     public GuildMusicManager getMusicManager(Guild guild) {
