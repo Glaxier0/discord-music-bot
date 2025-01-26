@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class MusicDto {
-   private String title;
+    private String title;
     private String youtubeUri;
 }

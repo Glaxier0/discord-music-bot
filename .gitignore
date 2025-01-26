@@ -5,3 +5,6 @@
 /src/main/resources/application.properties
 src/main/resources/application.properties
 dump.rdb
+.vscode
+bin
+downloads

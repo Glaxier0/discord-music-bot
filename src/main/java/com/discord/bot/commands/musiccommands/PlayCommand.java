@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+
 import org.apache.coyote.BadRequestException;
 
 import java.awt.*;
@@ -27,73 +29,38 @@ public class PlayCommand implements ISlashCommand {
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        var queryOption = event.getOption("query");
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
+        boolean ephemeral = shouldReplyEphemeral(event);
         event.deferReply(ephemeral).queue();
 
-        assert queryOption != null;
-        String query = queryOption.getAsString().trim();
-        MultipleMusicDto multipleMusicDto;
+        var queryOption = event.getOption("query");
+        var fileOption = event.getOption("file");
+
+        if (isInvalidInputCombination(queryOption, fileOption, event, ephemeral))
+            return;
+
         try {
-            multipleMusicDto = getSongUrl(query);
-        } catch (BadRequestException exception) {
-            event.getHook().sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("The maximum allowed Spotify playlist size is 50.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-            return;
+            MultipleMusicDto multipleMusicDto = processInput(queryOption, fileOption);
+            if (multipleMusicDto.getCount() == 0) {
+                sendErrorMessage(event, "YouTube quota has exceeded. Please use YouTube URLs to play music for today.", ephemeral);
+                return;
+            }
+            playMusic(event, multipleMusicDto, ephemeral);
+        } catch (BadRequestException e) {
+            sendErrorMessage(event, "The maximum allowed Spotify playlist size is 50.", ephemeral);
         }
-        if (multipleMusicDto.getCount() == 0) {
-            event.getHook().sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("Youtube quota has exceeded. " +
-                                    "Please use youtube urls to play music for today.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
-            return;
-        }
-        playMusic(event, multipleMusicDto, ephemeral);
     }
 
     private void playMusic(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
         AudioChannel userChannel = getAudioChannel(event, false);
+        if (userChannel == null) {
+            sendErrorMessage(event, "Please join a voice channel.", ephemeral);
+            return;
+        }
+
         AudioChannel botChannel = getAudioChannel(event, true);
+        if (!canPlayInChannel(userChannel, botChannel, event, ephemeral)) return;
 
-        if (userChannel != null) {
-            int trackSize = multipleMusicDto.getMusicDtoList().size();
-            if (trackSize != 0) {
-                if (botChannel == null) {
-                    GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-                    utils.playerCleaner(musicManager);
-
-                    if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
-                        event.getHook().sendMessageEmbeds(new EmbedBuilder()
-                                        .setDescription("Bot does not have permission to join the voice channel.")
-                                        .setColor(Color.RED)
-                                        .build())
-                                .setEphemeral(ephemeral)
-                                .queue();
-                        return;
-                    }
-                    userChannel.getGuild().getAudioManager().openAudioConnection(userChannel);
-                    botChannel = userChannel;
-                }
-                if (botChannel.equals(userChannel)) {
-                    if (trackSize == 1) playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList()
-                            .get(0), ephemeral);
-                    else playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
-                } else
-                    embedBuilder.setDescription("Please be in the same voice channel as the bot.").setColor(Color.RED);
-            } else embedBuilder.setDescription("No tracks found.").setColor(Color.RED);
-        } else embedBuilder.setDescription("Please join a voice channel.").setColor(Color.RED);
-
-        if (!embedBuilder.isEmpty())
-            event.getHook().sendMessageEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        loadAndPlayTracks(event, multipleMusicDto, userChannel, botChannel, ephemeral);
     }
 
     private AudioChannel getAudioChannel(SlashCommandInteractionEvent event, boolean self) {
@@ -113,9 +80,63 @@ public class PlayCommand implements ISlashCommand {
         return audioChannel;
     }
 
+    private boolean canPlayInChannel(AudioChannel userChannel, AudioChannel botChannel,
+            SlashCommandInteractionEvent event, boolean ephemeral) {
+        if (botChannel == null) {
+            if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
+                sendErrorMessage(event, "Bot does not have permission to join the voice channel.", ephemeral);
+                return false;
+            }
+            userChannel.getGuild().getAudioManager().openAudioConnection(userChannel);
+        } else if (!botChannel.equals(userChannel)) {
+            sendErrorMessage(event, "Please be in the same voice channel as the bot.", ephemeral);
+            return false;
+        }
+        return true;
+    }
+
+    private void loadAndPlayTracks(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto,
+            AudioChannel userChannel, AudioChannel botChannel, boolean ephemeral) {
+        GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
+        utils.playerCleaner(musicManager);
+
+        int trackCount = multipleMusicDto.getMusicDtoList().size();
+        if (trackCount == 1) {
+            playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList().get(0), ephemeral);
+        } else if (trackCount > 1) {
+            playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
+        } else {
+            sendErrorMessage(event, "No tracks found.", ephemeral);
+        }
+    }
+
+    private boolean shouldReplyEphemeral(SlashCommandInteractionEvent event) {
+        var ephemeralOption = event.getOption("ephemeral");
+        return ephemeralOption == null || ephemeralOption.getAsBoolean();
+    }
+
+    private boolean isInvalidInputCombination(OptionMapping queryOption, OptionMapping fileOption,
+            SlashCommandInteractionEvent event, boolean ephemeral) {
+        if (queryOption != null && fileOption != null) {
+            sendErrorMessage(event, "Please provide either a query or upload a file, not both.", ephemeral);
+            return true;
+        }
+        return false;
+    }
+
+    private MultipleMusicDto processInput(OptionMapping queryOption, OptionMapping fileOption) throws BadRequestException {
+        if (queryOption != null) {
+            return getSongUrl(queryOption.getAsString().trim());
+        } else if (fileOption != null) {
+            return processUploadedFile(fileOption);
+        }
+        return new MultipleMusicDto();
+    }
+
     private MultipleMusicDto getSongUrl(String query) throws BadRequestException {
         List<MusicDto> musicDtos = new ArrayList<>();
-        if (query.contains("https://www.youtube.com/shorts/")) query = youtubeShortsToVideo(query);
+        if (query.contains("https://www.youtube.com/shorts/"))
+            query = youtubeShortsToVideo(query);
         if (isSupportedUrl(query)) {
             musicDtos.add(new MusicDto(null, query));
             return new MultipleMusicDto(1, musicDtos, 0);
@@ -127,6 +148,11 @@ public class PlayCommand implements ISlashCommand {
         }
     }
 
+    private MultipleMusicDto processUploadedFile(OptionMapping fileOption) {
+        var musicDto = new MusicDto(fileOption.getAsAttachment().getFileName(), fileOption.getAsAttachment().getUrl());
+        return new MultipleMusicDto(1, List.of(musicDto), 0);
+    }
+
     private boolean isSupportedUrl(String url) {
         return (url.contains("https://www.youtube.com/watch?v=")
                 || url.contains("https://youtu.be/")
@@ -134,11 +160,17 @@ public class PlayCommand implements ISlashCommand {
                 || url.contains("https://music.youtube.com/watch?v=")
                 || url.contains("https://music.youtube.com/playlist?list=")
                 || url.contains("https://www.twitch.tv/")
-                || url.contains("https://soundcloud.com/")
-        );
+                || url.contains("https://soundcloud.com/"));
     }
 
     private String youtubeShortsToVideo(String url) {
         return url.replace("shorts/", "watch?v=");
+    }
+
+    private void sendErrorMessage(SlashCommandInteractionEvent event, String message, boolean ephemeral) {
+        EmbedBuilder embed = new EmbedBuilder()
+                .setDescription(message)
+                .setColor(Color.RED);
+        event.getHook().sendMessageEmbeds(embed.build()).setEphemeral(ephemeral).queue();
     }
 }

@@ -14,11 +14,13 @@ public class JdaCommands {
 
         globalCommands.addCommands(
                 //Music Commands
-                Commands.slash("play", "Play a song on your voice channel.")
-                        .addOptions(new OptionData(OptionType.STRING, "query", "Song url or name.")
-                                        .setRequired(true),
-                                new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
-                                        .setRequired(false))
+                Commands.slash("play", "Play a song, playlist, or local file in your voice channel.")
+                        .addOptions(new OptionData(OptionType.STRING, "query", "Song URL or name.")
+                                .setRequired(false),
+                        new OptionData(OptionType.ATTACHMENT, "file", "Upload an audio file to play.")
+                                .setRequired(false),
+                        new OptionData(OptionType.BOOLEAN, "ephemeral", "Whether the response should be ephemeral.")
+                                .setRequired(false))
                         .setGuildOnly(true),
                 Commands.slash("skip", "Skip the current song.")
                         .addOptions(new OptionData(OptionType.BOOLEAN, "ephemeral", ephemeralString)
