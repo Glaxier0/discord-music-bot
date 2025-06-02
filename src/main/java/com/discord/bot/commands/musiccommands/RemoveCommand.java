@@ -3,6 +3,7 @@ package com.discord.bot.commands.musiccommands;
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.AllArgsConstructor;
@@ -19,12 +20,11 @@ import java.util.concurrent.BlockingQueue;
 public class RemoveCommand implements ISlashCommand {
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
+    ReplyService replyService;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
@@ -43,7 +43,7 @@ public class RemoveCommand implements ISlashCommand {
             } else embedBuilder.setDescription("Song queue is empty.").setColor(Color.RED);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
-        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 
     private void handleSingleCommand(SlashCommandInteractionEvent event, BlockingQueue<AudioTrack> queue, EmbedBuilder embedBuilder) {
@@ -57,7 +57,6 @@ public class RemoveCommand implements ISlashCommand {
             }
 
             var removedSong = iterator.next();
-            //noinspection ResultOfMethodCallIgnored
             queue.remove(removedSong);
 
             embedBuilder.setDescription("Song removed from the queue.").setColor(Color.GREEN);
@@ -78,7 +77,6 @@ public class RemoveCommand implements ISlashCommand {
                     songsToRemove.add(song);
                 }
             }
-            //noinspection SuspiciousMethodCalls
             queue.removeAll(songsToRemove);
 
             embedBuilder.setDescription("Removed songs from the queue.").setColor(Color.GREEN);
@@ -88,7 +86,6 @@ public class RemoveCommand implements ISlashCommand {
     }
 
     private void handleAllCommand(BlockingQueue<AudioTrack> queue, EmbedBuilder embedBuilder) {
-        //noinspection SuspiciousMethodCalls
         queue.removeAll(Arrays.asList(queue.toArray()));
         embedBuilder.setDescription("Removed songs from the queue.").setColor(Color.GREEN);
     }

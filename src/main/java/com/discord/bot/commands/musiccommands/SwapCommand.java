@@ -2,6 +2,7 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -17,12 +18,11 @@ import java.util.List;
 public class SwapCommand implements ISlashCommand {
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
+    ReplyService replyService;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
@@ -60,6 +60,6 @@ public class SwapCommand implements ISlashCommand {
             embedBuilder.setDescription("Please be in the same voice channel as the bot.").setColor(Color.RED);
         }
 
-        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 }

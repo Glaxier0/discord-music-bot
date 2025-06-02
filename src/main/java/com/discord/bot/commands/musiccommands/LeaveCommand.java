@@ -2,6 +2,7 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import lombok.AllArgsConstructor;
@@ -15,18 +16,17 @@ import java.awt.*;
 public class LeaveCommand implements ISlashCommand {
     private final PlayerManagerService playerManagerService;
     private final MusicCommandUtils utils;
+    private final ReplyService replyService;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         Guild guild = event.getGuild();
         if (guild == null) {
             embedBuilder.setDescription("This command can only be used in a server.")
                         .setColor(Color.RED);
-            event.replyEmbeds(embedBuilder.build()).setEphemeral(true).queue();
+            replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
             return;
         }
 
@@ -41,6 +41,6 @@ public class LeaveCommand implements ISlashCommand {
                         .setColor(Color.RED);
         }
 
-        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 }

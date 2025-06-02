@@ -1,6 +1,7 @@
 package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
 import lombok.AllArgsConstructor;
@@ -13,12 +14,11 @@ import java.awt.*;
 public class LoopCommand implements ISlashCommand {
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
+    ReplyService replyService;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
             boolean repeat = playerManagerService.getMusicManager(event.getGuild()).scheduler.repeating;
@@ -28,6 +28,6 @@ public class LoopCommand implements ISlashCommand {
             else embedBuilder.setDescription(":x: Track loop disabled.").setColor(Color.RED);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 
-        event.replyEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 }

@@ -19,12 +19,6 @@ public class ReplyService {
         event.getHook().sendMessageEmbeds(embed.build()).setEphemeral(ephemeral).queue();
     }
 
-    public EmbedBuilder createBasicEmbed(String message, Color color) {
-        return new EmbedBuilder()
-                .setDescription(message)
-                .setColor(color);
-    }
-
     public void replyWithComponents(SlashCommandInteractionEvent event,
             EmbedBuilder embed,
             List<ActionRow> actionRows,
@@ -34,5 +28,11 @@ public class ReplyService {
                 .setComponents(actionRows)
                 .setEphemeral(ephemeral)
                 .queue();
+    }
+
+    private EmbedBuilder createBasicEmbed(String message, Color color) {
+        return new EmbedBuilder()
+                .setDescription(message)
+                .setColor(color);
     }
 }

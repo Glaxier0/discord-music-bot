@@ -2,6 +2,7 @@ package com.discord.bot.commands.musiccommands;
 
 import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.AllArgsConstructor;
@@ -15,12 +16,11 @@ import java.util.concurrent.TimeUnit;
 public class NowPlayingCommand implements ISlashCommand {
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
+    ReplyService replyService;
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
 
         if (utils.channelControl(event)) {
             AudioTrack track = playerManagerService.getMusicManager(event.getGuild()).audioPlayer.getPlayingTrack();
@@ -46,9 +46,6 @@ public class NowPlayingCommand implements ISlashCommand {
                         .setColor(Color.GREEN);
             } else embedBuilder.setDescription("There is no song currently playing.").setColor(Color.RED);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
-
-        event.replyEmbeds(embedBuilder.build())
-                .setEphemeral(ephemeral)
-                .queue();
+        replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 }
