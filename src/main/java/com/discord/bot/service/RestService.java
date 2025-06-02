@@ -4,10 +4,7 @@ import com.discord.bot.dto.response.spotify.SpotifyItemDto;
 import com.discord.bot.dto.response.spotify.SpotifyPlaylistResponse;
 import com.discord.bot.dto.response.spotify.SpotifyTrackResponse;
 import com.discord.bot.dto.response.spotify.TrackDto;
-
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-
+import com.discord.bot.dto.MultipleMusicDto;
 import com.discord.bot.dto.MusicDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +13,10 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.awt.Color;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -36,59 +34,96 @@ public class RestService {
         this.restTemplate = new RestTemplateBuilder().build();
     }
 
-    public List<MusicDto> getTracksFromSpotify(SlashCommandInteractionEvent event, String spotifyUrl) {
-        logger.info("Getting tracks from Spotify.");
+    public MultipleMusicDto getTracksFromSpotify(String spotifyUrl) {
         List<MusicDto> musicDtos = new ArrayList<>();
         String id = extractSpotifyId(spotifyUrl);
-        if (id == null) {
-            sendErrorMessage(event, "Invalid Spotify URL provided.", true);
-            return List.of();
-        }
 
-        if (spotifyUrl.contains("/playlist/")) {
-            String apiUrl = "https://api.spotify.com/v1/playlists/" + id + "/tracks?fields=items(track(name,artists(name)))&limit=50";
+        if (id == null)
+            return MultipleMusicDto.error("Invalid Spotify URL.");
 
-            SpotifyPlaylistResponse playlist = getSpotifyPlaylistData(apiUrl);
-            List<SpotifyItemDto> items = playlist.getSpotifyItemDtoList();
+        try {
+            if (spotifyUrl.contains("/playlist/")) {
+                String apiUrl = "https://api.spotify.com/v1/playlists/" + id
+                        + "/tracks?fields=items(track(name,artists(name)))&limit=50";
 
-            if (items.size() > 50) {
-                sendErrorMessage(event, "Max allowed playlist size is 50.", true);
-                return List.of();
-            }
+                SpotifyPlaylistResponse playlist = getSpotifyPlaylistData(apiUrl);
+                List<SpotifyItemDto> items = playlist.getSpotifyItemDtoList();
 
-            for (SpotifyItemDto item : items) {
-                TrackDto track = item.getTrackDtoList();
-                String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getName();
+                if (items.isEmpty()) {
+                    return MultipleMusicDto.error("This Spotify playlist appears to be empty.");
+                }
+
+                if (items.size() > 50) {
+                    return MultipleMusicDto.error("Playlist is too large! Maximum 50 tracks allowed.");
+                }
+
+                for (SpotifyItemDto item : items) {
+                    if (item == null || item.getTrackDtoList() == null)
+                        continue;
+                    TrackDto track = item.getTrackDtoList();
+                    if (track.getArtistDtoList() != null && !track.getArtistDtoList().isEmpty()) {
+                        String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getName();
+                        musicDtos.add(new MusicDto(musicName, "ytsearch:" + musicName));
+                    }
+                }
+                
+            } else if (spotifyUrl.contains("/track/")) {
+                String apiUrl = "https://api.spotify.com/v1/tracks/" + id;
+
+                SpotifyTrackResponse track = getSpotifyTrackData(apiUrl);
+                if (track == null || track.getArtistDtoList() == null || track.getArtistDtoList().isEmpty()) {
+                    return MultipleMusicDto.error("Could not retrieve track information from Spotify.");
+                }
+                String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getSongName();
                 musicDtos.add(new MusicDto(musicName, "ytsearch:" + musicName));
+            } else {
+                return MultipleMusicDto.error("Unsupported Spotify URL. Please provide a direct link to a track or playlist.");
             }
-        } else if (spotifyUrl.contains("/track/")) {
-            String apiUrl = "https://api.spotify.com/v1/tracks/" + id;
-
-            SpotifyTrackResponse track = getSpotifyTrackData(apiUrl);
-            String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getSongName();
-            musicDtos.add(new MusicDto(musicName, "ytsearch:" + musicName));
-        } else {
-            sendErrorMessage(event, "Spotify search failed.", true);
-            return List.of();
+        } catch (Exception e) {
+            logger.error("Unexpected error from Spotify API", e);
+            return MultipleMusicDto.error("An unexpected error occurred while loading Spotify tracks.");
         }
 
-        return musicDtos;
+        return MultipleMusicDto.of(musicDtos);
     }
 
     private SpotifyPlaylistResponse getSpotifyPlaylistData(String spotifyUrl) {
-        URI spotifyUri = createUri(spotifyUrl);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(spotifyToken);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyPlaylistResponse.class).getBody();
+        try {
+            URI spotifyUri = createUri(spotifyUrl);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(spotifyToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            var response = restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyPlaylistResponse.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return response.getBody();
+            }
+            throw new HttpClientErrorException(response.getStatusCode(),
+                    "Failed to fetch playlist data from Spotify.");
+        } catch (RestClientException e) {
+            logger.error("Error fetching Spotify playlist data", e);
+            throw e;
+        }
     }
 
     private SpotifyTrackResponse getSpotifyTrackData(String spotifyUrl) {
-        URI spotifyUri = createUri(spotifyUrl);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(spotifyToken);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        return restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyTrackResponse.class).getBody();
+        try {
+            URI spotifyUri = createUri(spotifyUrl);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(spotifyToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            var response = restTemplate.exchange(spotifyUri, HttpMethod.GET, entity, SpotifyTrackResponse.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return response.getBody();
+            }
+            throw new SpotifyApiException("Failed to fetch track data from Spotify.");
+        } catch (RestClientException e) {
+            logger.error("Error fetching Spotify track data", e);
+            throw e;
+        }
     }
 
     private URI createUri(String url) {
@@ -109,12 +144,5 @@ public class RestService {
             logger.error("Invalid Spotify URL: " + spotifyUrl);
             return null;
         }
-    }
-
-    private void sendErrorMessage(SlashCommandInteractionEvent event, String message, boolean ephemeral) {
-        EmbedBuilder embed = new EmbedBuilder()
-                .setDescription(message)
-                .setColor(Color.RED);
-        event.getHook().sendMessageEmbeds(embed.build()).setEphemeral(ephemeral).queue();
     }
 }

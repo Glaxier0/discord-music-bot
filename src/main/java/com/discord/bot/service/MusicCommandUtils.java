@@ -4,8 +4,12 @@ import com.discord.bot.audioplayer.GuildMusicManager;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -47,9 +51,20 @@ public class MusicCommandUtils {
         return embedBuilder;
     }
 
+    public void leaveIfEmpty(Guild guild, GuildMusicManager musicManager) {
+        if (musicManager.scheduler.queue.isEmpty() && musicManager.scheduler.player.getPlayingTrack() == null) {
+            playerCleaner(musicManager);
+            guild.getAudioManager().closeAudioConnection();
+        }
+    }
+
     public boolean isEphemeralOptionEnabled(SlashCommandInteractionEvent event) {
         var ephemeralOption = event.getOption("ephemeral");
         return ephemeralOption == null || ephemeralOption.getAsBoolean();
+    }
+
+    public Attachment getAttachedFile(OptionMapping fileOption) {
+        return fileOption.getAsAttachment();
     }
 
     public void playerCleaner(GuildMusicManager musicManager) {

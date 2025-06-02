@@ -4,6 +4,7 @@ import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
 import com.discord.bot.commands.musiccommands.*;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.RestService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 
@@ -19,14 +20,16 @@ public class CommandManager extends ListenerAdapter {
     final RestService restService;
     final PlayerManagerService playerManagerService;
     final MusicCommandUtils musicCommandUtils;
+    final ReplyService replyService;
     private final String adminUserId;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-                          MusicCommandUtils musicCommandUtils, String adminUserId) {
+            MusicCommandUtils musicCommandUtils, ReplyService replyService, String adminUserId) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
+        this.replyService = replyService;
         this.adminUserId = adminUserId;
         commandMapper();
     }
@@ -53,19 +56,19 @@ public class CommandManager extends ListenerAdapter {
         commandsMap.put("guilds", new GuildsCommand(adminUserId));
         commandsMap.put("logs", new LogsCommand(adminUserId));
         //Music Commands
-        commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils));
-        commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("forward", new ForwardCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("rewind", new RewindCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("pause", new PauseCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("resume", new ResumeCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("leave", new LeaveCommand(playerManagerService, musicCommandUtils));
+        commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("forward", new ForwardCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("rewind", new RewindCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("pause", new PauseCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("resume", new ResumeCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("leave", new LeaveCommand(playerManagerService, musicCommandUtils, replyService));
         commandsMap.put("queue", new QueueCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("swap", new SwapCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("shuffle", new ShuffleCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("loop", new LoopCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("remove", new RemoveCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("nowplaying", new NowPlayingCommand(playerManagerService, musicCommandUtils));
-        commandsMap.put("mhelp", new MusicHelpCommand());
+        commandsMap.put("swap", new SwapCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("shuffle", new ShuffleCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("loop", new LoopCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("remove", new RemoveCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("nowplaying", new NowPlayingCommand(playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("mhelp", new MusicHelpCommand(musicCommandUtils, replyService));
     }
 }

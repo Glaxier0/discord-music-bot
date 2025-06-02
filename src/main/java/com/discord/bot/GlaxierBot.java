@@ -24,6 +24,7 @@ public class GlaxierBot {
     final PlayerManagerService playerManagerService;
     final MusicCommandUtils musicCommandUtils;
     final SpotifyTokenService spotifyTokenService;
+    final ReplyService replyService;
 
     @Value("${discord.bot.token}")
     private String discordToken;
@@ -35,18 +36,20 @@ public class GlaxierBot {
     private String adminUserId;
 
     public GlaxierBot(RestService restService, PlayerManagerService playerManagerService,
-                      MusicCommandUtils musicCommandUtils, SpotifyTokenService spotifyTokenService) {
+                    MusicCommandUtils musicCommandUtils, SpotifyTokenService spotifyTokenService,
+                    ReplyService replyService) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
         this.spotifyTokenService = spotifyTokenService;
+        this.replyService = replyService;
     }
 
     @PostConstruct
     public void startDiscordBot() throws InterruptedException {
         JDA jda = JDABuilder.createDefault(discordToken)
                 .addEventListeners(
-                        new CommandManager(restService, playerManagerService, musicCommandUtils, adminUserId))
+                        new CommandManager(restService, playerManagerService, musicCommandUtils, replyService, adminUserId))
                 .setActivity(Activity.listening("Type /mhelp")).build();
         jda.awaitReady();
         new JdaCommands().addJdaCommands(jda);
