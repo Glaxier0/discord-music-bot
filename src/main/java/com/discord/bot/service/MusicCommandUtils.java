@@ -15,15 +15,14 @@ import java.util.concurrent.BlockingQueue;
 public class MusicCommandUtils {
     public boolean channelControl(SlashCommandInteractionEvent event) {
         var guild = event.getGuild();
+        var member = event.getMember();
 
-        if (guild != null && event.getMember() != null) {
+        if (guild != null && member != null) {
             GuildVoiceState selfVoiceState = guild.getSelfMember().getVoiceState();
-            GuildVoiceState memberVoiceState = event.getMember().getVoiceState();
+            GuildVoiceState memberVoiceState = member.getVoiceState();
+
             if (selfVoiceState != null && memberVoiceState != null) {
-                if (!selfVoiceState.inAudioChannel()) {
-                    return false;
-                }
-                if (!memberVoiceState.inAudioChannel()) {
+                if (!selfVoiceState.inAudioChannel() || !memberVoiceState.inAudioChannel()) {
                     return false;
                 }
 
@@ -33,7 +32,8 @@ public class MusicCommandUtils {
         return false;
     }
 
-    public EmbedBuilder queueBuilder(EmbedBuilder embedBuilder, int page, BlockingQueue<AudioTrack> queue, List<AudioTrack> trackList) {
+    public EmbedBuilder queueBuilder(EmbedBuilder embedBuilder, int page, BlockingQueue<AudioTrack> queue,
+            List<AudioTrack> trackList) {
         embedBuilder.setTitle("Queue - Page " + page);
         int startIndex = (page - 1) * 20;
         int endIndex = Math.min(startIndex + 20, queue.size());

@@ -6,6 +6,10 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,13 +75,17 @@ public class TrackScheduler extends AudioEventAdapter {
 
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (guild.getSelfMember().getVoiceState() != null && guild.getSelfMember().getVoiceState().getChannel() != null) {
-            // If bot is alone in the voice
-            if (guild.getSelfMember().getVoiceState().getChannel().getMembers().size() == 1) {
+        Member self = guild.getSelfMember();
+        GuildVoiceState voiceState = self.getVoiceState();
+
+        if (voiceState != null) {
+            AudioChannel channel = voiceState.getChannel();
+            if (channel != null && channel.getMembers().size() == 1) {
                 guild.getAudioManager().closeAudioConnection();
                 return;
             }
         }
+
         if (endReason.mayStartNext) {
             if (this.repeating) {
                 this.player.startTrack(track.makeClone(), false);

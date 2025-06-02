@@ -29,14 +29,21 @@ public class QueueButton implements IButtonInteraction {
     private void handleButtonClick(ButtonInteractionEvent event, boolean next) {
         var embed = event.getMessage().getEmbeds().stream().findFirst();
 
-        var title = "Page 1";
-
+        String title = "Page 1";
         if (embed.isPresent()) {
-            title = embed.get().getTitle() == null ? "Page 1" : embed.get().getTitle();
+            var embedTitle = embed.get().getTitle();
+            if (embedTitle != null && embedTitle.contains("Page")) {
+                title = embedTitle;
+            }
         }
 
-        int currentPage = Integer.parseInt(title.substring(title.lastIndexOf("Page")
-                + "Page".length()).trim());
+        int currentPage = 1;
+        try {
+            currentPage = Integer.parseInt(
+                    title.substring(title.lastIndexOf("Page") + "Page".length()).trim());
+        } catch (NumberFormatException e) {
+            currentPage = 1;
+        }
 
         BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
 
@@ -45,8 +52,10 @@ public class QueueButton implements IButtonInteraction {
         int totalPages = (int) Math.ceil((double) totalTracks / pageSize);
 
         int page = currentPage;
-        if (next) page++;
-        else page--;
+        if (next)
+            page++;
+        else
+            page--;
 
         updateEmbed(event, totalPages, page);
     }
@@ -76,6 +85,7 @@ public class QueueButton implements IButtonInteraction {
                 Button.secondary("prev", "Previous Page")
                         .withDisabled(page == 1),
                 Button.secondary("next", "Next Page")
-                        .withDisabled(page == totalPages)).queue();
+                        .withDisabled(page == totalPages))
+                .queue();
     }
 }

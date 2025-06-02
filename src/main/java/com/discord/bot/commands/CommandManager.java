@@ -32,7 +32,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+    public void onSlashCommandInteraction(@SuppressWarnings("null") @NonNull SlashCommandInteractionEvent event) {
         String commandName = event.getName();
 
         ISlashCommand command;
@@ -42,7 +42,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     @Override
-    public void onButtonInteraction(@NonNull ButtonInteractionEvent event) {
+    public void onButtonInteraction(@SuppressWarnings("null") @NonNull ButtonInteractionEvent event) {
         IButtonInteraction interaction = new QueueButton(playerManagerService, musicCommandUtils);
         interaction.click(event);
     }
