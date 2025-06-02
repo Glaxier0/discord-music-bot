@@ -105,6 +105,11 @@ public class PlayCommand implements ISlashCommand {
             return;
         }
 
+        if (multipleMusicDto.getMusicDtoList() == null || multipleMusicDto.getMusicDtoList().isEmpty()) {
+            replyService.deferReply(event, "No valid tracks found to play.", Color.RED, ephemeral);
+            return;
+        }
+
         int trackCount = multipleMusicDto.getMusicDtoList().size();
         if (trackCount == 1) {
             playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList().get(0), ephemeral);
