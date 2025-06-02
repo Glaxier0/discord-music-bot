@@ -52,7 +52,7 @@ public class PlayCommand implements ISlashCommand {
     private void playMusic(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
         AudioChannel userChannel = getAudioChannel(event, false);
         if (userChannel == null) {
-            replyService.reply(event, "Please join a voice channel to play music.", Color.RED, ephemeral);
+            replyService.deferReply(event, "Please join a voice channel to play music.", Color.RED, ephemeral);
             return;
         }
 
@@ -84,13 +84,13 @@ public class PlayCommand implements ISlashCommand {
             SlashCommandInteractionEvent event, boolean ephemeral) {
         if (botChannel == null) {
             if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
-                replyService.reply(event, "Please check the bot's permissions in the voice channel.", Color.RED,
+                replyService.deferReply(event, "Please check the bot's permissions in the voice channel.", Color.RED,
                         ephemeral);
                 return false;
             }
             userChannel.getGuild().getAudioManager().openAudioConnection(userChannel);
         } else if (!botChannel.equals(userChannel)) {
-            replyService.reply(event, "Please be in the same voice channel as the bot.", Color.RED, ephemeral);
+            replyService.deferReply(event, "Please be in the same voice channel as the bot.", Color.RED, ephemeral);
             return false;
         }
         return true;
@@ -99,7 +99,7 @@ public class PlayCommand implements ISlashCommand {
     private void loadAndPlayTracks(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto,
             AudioChannel userChannel, AudioChannel botChannel, boolean ephemeral) {
         if (multipleMusicDto.hasError()) {
-            replyService.reply(event, multipleMusicDto.getErrorMessage(), Color.RED, ephemeral);
+            replyService.deferReply(event, multipleMusicDto.getErrorMessage(), Color.RED, ephemeral);
             Guild guild = event.getGuild();
             utils.leaveIfEmpty(guild, playerManagerService.getMusicManager(guild));
             return;
@@ -111,14 +111,14 @@ public class PlayCommand implements ISlashCommand {
         } else if (trackCount > 1) {
             playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
         } else {
-            replyService.reply(event, "No tracks found.", Color.RED, ephemeral);
+            replyService.deferReply(event, "No tracks found.", Color.RED, ephemeral);
         }
     }
 
     private boolean isInvalidInputCombination(OptionMapping queryOption, OptionMapping fileOption,
             SlashCommandInteractionEvent event, boolean ephemeral) {
         if (queryOption != null && fileOption != null) {
-            replyService.reply(event, "Please provide either a query or upload a file, not both.", Color.RED,
+            replyService.deferReply(event, "Please provide either a query or upload a file, not both.", Color.RED,
                     ephemeral);
             return true;
         }

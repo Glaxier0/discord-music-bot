@@ -15,7 +15,15 @@ public class ReplyService {
         replyWithEmbed(event, createBasicEmbed(message, color), ephemeral);
     }
 
+    public void deferReply(SlashCommandInteractionEvent event, String message, Color color, boolean ephemeral) {
+        deferReplyWithEmbed(event, createBasicEmbed(message, color), ephemeral);
+    }
+
     public void replyWithEmbed(SlashCommandInteractionEvent event, EmbedBuilder embed, boolean ephemeral) {
+        event.replyEmbeds(embed.build()).setEphemeral(ephemeral).queue();
+    }
+
+    public void deferReplyWithEmbed(SlashCommandInteractionEvent event, EmbedBuilder embed, boolean ephemeral) {
         event.getHook().sendMessageEmbeds(embed.build()).setEphemeral(ephemeral).queue();
     }
 

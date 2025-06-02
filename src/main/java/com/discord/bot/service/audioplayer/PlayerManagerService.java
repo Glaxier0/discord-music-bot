@@ -79,7 +79,7 @@ public class PlayerManagerService {
         this.audioPlayerManager.loadItemOrdered(musicManager, musicDto.getYoutubeUri(), new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                replyService.reply(event, "Song added to the queue: "
+                replyService.deferReply(event, "Song added to the queue: "
                         + track.getInfo().title
                         + "\n in queue: "
                         + (musicManager.scheduler.queue.size() + 1),
@@ -92,7 +92,7 @@ public class PlayerManagerService {
                 List<AudioTrack> tracks = playlist.getTracks();
                 if (playlist.isSearchResult() && !playlist.getTracks().isEmpty()) {
                     AudioTrack firstResult = playlist.getTracks().get(0);
-                    replyService.reply(event, "Song added to the queue: "
+                    replyService.deferReply(event, "Song added to the queue: "
                             + firstResult.getInfo().title
                             + "\n in queue: "
                             + (musicManager.scheduler.queue.size() + 1),
@@ -102,20 +102,20 @@ public class PlayerManagerService {
                     for (AudioTrack track : tracks) {
                         musicManager.scheduler.queue(track);
                     }
-                    replyService.reply(event, tracks.size() + " songs added to the queue.", Color.GREEN, ephemeral);
+                    replyService.deferReply(event, tracks.size() + " songs added to the queue.", Color.GREEN, ephemeral);
                 }
             }
 
             @Override
             public void noMatches() {
                 logger.warn("No match is found for: {}", musicDto.getYoutubeUri());
-                replyService.reply(event, "No matches found for: " + musicDto.getYoutubeUri(), Color.RED, ephemeral);
+                replyService.deferReply(event, "No matches found for: " + musicDto.getYoutubeUri(), Color.RED, ephemeral);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
                 logger.error("Track load failed.", exception);
-                replyService.reply(event, "Failed to load track: " + musicDto.getYoutubeUri(), Color.RED, ephemeral);
+                replyService.deferReply(event, "Failed to load track: " + musicDto.getYoutubeUri(), Color.RED, ephemeral);
             }
         });
     }
@@ -129,7 +129,7 @@ public class PlayerManagerService {
         int totalTracks = tracksToLoad.size();
 
         if (totalTracks == 0) {
-            replyService.reply(event, "⚠ No tracks to load!", Color.RED, ephemeral);
+            replyService.deferReply(event, "⚠ No tracks to load!", Color.RED, ephemeral);
             return;
         }
 
