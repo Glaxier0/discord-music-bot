@@ -1,6 +1,5 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.dto.MultipleMusicDto;
 import com.discord.bot.dto.MusicDto;
@@ -14,8 +13,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-
-import org.apache.coyote.BadRequestException;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -38,16 +35,8 @@ public class PlayCommand implements ISlashCommand {
         if (isInvalidInputCombination(queryOption, fileOption, event, ephemeral))
             return;
 
-        try {
-            MultipleMusicDto multipleMusicDto = processInput(queryOption, fileOption);
-            if (multipleMusicDto.getCount() == 0) {
-                sendErrorMessage(event, "YouTube quota has exceeded. Please use YouTube URLs to play music for today.", ephemeral);
-                return;
-            }
-            playMusic(event, multipleMusicDto, ephemeral);
-        } catch (BadRequestException e) {
-            sendErrorMessage(event, "The maximum allowed Spotify playlist size is 50.", ephemeral);
-        }
+        MultipleMusicDto multipleMusicDto = processInput(event, queryOption, fileOption);
+        playMusic(event, multipleMusicDto, ephemeral);
     }
 
     private void playMusic(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
@@ -97,9 +86,6 @@ public class PlayCommand implements ISlashCommand {
 
     private void loadAndPlayTracks(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto,
             AudioChannel userChannel, AudioChannel botChannel, boolean ephemeral) {
-        GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-        utils.playerCleaner(musicManager);
-
         int trackCount = multipleMusicDto.getMusicDtoList().size();
         if (trackCount == 1) {
             playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList().get(0), ephemeral);
@@ -124,16 +110,16 @@ public class PlayCommand implements ISlashCommand {
         return false;
     }
 
-    private MultipleMusicDto processInput(OptionMapping queryOption, OptionMapping fileOption) throws BadRequestException {
+    private MultipleMusicDto processInput(SlashCommandInteractionEvent event, OptionMapping queryOption, OptionMapping fileOption) {
         if (queryOption != null) {
-            return getSongUrl(queryOption.getAsString().trim());
+            return getSongUrl(event, queryOption.getAsString().trim());
         } else if (fileOption != null) {
             return processUploadedFile(fileOption);
         }
         return new MultipleMusicDto();
     }
 
-    private MultipleMusicDto getSongUrl(String query) throws BadRequestException {
+    private MultipleMusicDto getSongUrl(SlashCommandInteractionEvent event, String query) {
         List<MusicDto> musicDtos = new ArrayList<>();
         if (query.contains("https://www.youtube.com/shorts/"))
             query = youtubeShortsToVideo(query);
@@ -141,10 +127,15 @@ public class PlayCommand implements ISlashCommand {
             musicDtos.add(new MusicDto(null, query));
             return new MultipleMusicDto(1, musicDtos, 0);
         } else if (query.contains("https://open.spotify.com/")) {
-            musicDtos = restService.getTracksFromSpotify(query);
-            return restService.getYoutubeUrl(musicDtos);
+            musicDtos = restService.getTracksFromSpotify(event, query);
+            if (musicDtos.isEmpty()) {
+                return new MultipleMusicDto(0, musicDtos, 0);
+            }
+            return new MultipleMusicDto(musicDtos.size(), musicDtos, 0);
         } else {
-            return restService.getYoutubeUrl(new MusicDto(query, null));
+            String lavaplayerQuery = "ytsearch:" + query;
+            musicDtos = List.of(new MusicDto(query, lavaplayerQuery));
+            return new MultipleMusicDto(1, musicDtos, 0);
         }
     }
 
