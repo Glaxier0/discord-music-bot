@@ -1,0 +1,51 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+
+lavalink:
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.0"
+      repository: "https://maven.lavalink.dev/releases"
+
+  server:
+    password: "youshallnotpass"
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: true
+
+plugins:
+  youtube:
+    enabled: true
+
+    clients:
+      - WEB
+      - TV
+
+    oauth:
+      enabled: true
+      refreshToken: "refresh_token_here"
+      skipInitialization: false
+
+    ipBlocks:
+      - "ip_block_here"
+
+    strategy: "RotateOnBan"
+
+    allowSearch: true
+    allowDirectVideoIds: true
+    allowDirectPlaylistIds: true
+
+    remoteCipher:
+      url: "https://cipher.kikkia.dev/"
+      userAgent: "user_agent_here"
+
+logging:
+  level:
+    root: INFO
+    lavalink: INFO
+    dev.lavalink.youtube.http.YoutubeOauth2Handler: INFO
