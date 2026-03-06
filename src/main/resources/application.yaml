@@ -1,13 +1,6 @@
 spring:
-  datasource:
-    username: postgres
-    password: postgres
-    url: jdbc:postgresql://localhost:5432/music_bot
   main:
     web-application-type: none
-  jpa:
-    hibernate:
-      ddl-auto: update
 
 logging:
   level:
@@ -22,10 +15,14 @@ discord:
       id: your_admin_server
     user:
       id: your_id
+
 # noinspection SpringBootApplicationYaml
-youtube:
-  api:
-    key:
+lavalink:
+  server:
+    uri: ws://localhost:2333
+    password: youshallnotpass
+
+# noinspection SpringBootApplicationYaml
 spotify:
   client:
     secret:
