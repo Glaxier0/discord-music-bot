@@ -3,14 +3,16 @@ package com.discord.bot.commands.musiccommands;
 import com.discord.bot.commands.IButtonInteraction;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.arbjerg.lavalink.client.player.Track;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.awt.*;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
+import java.util.Queue;
 
 @AllArgsConstructor
 public class QueueButton implements IButtonInteraction {
@@ -29,24 +31,33 @@ public class QueueButton implements IButtonInteraction {
     private void handleButtonClick(ButtonInteractionEvent event, boolean next) {
         var embed = event.getMessage().getEmbeds().stream().findFirst();
 
-        var title = "Page 1";
-
+        String title = "Page 1";
         if (embed.isPresent()) {
-            title = embed.get().getTitle() == null ? "Page 1" : embed.get().getTitle();
+            var embedTitle = embed.get().getTitle();
+            if (embedTitle != null && embedTitle.contains("Page")) {
+                title = embedTitle;
+            }
         }
 
-        int currentPage = Integer.parseInt(title.substring(title.lastIndexOf("Page")
-                + "Page".length()).trim());
+        int currentPage = 1;
+        try {
+            currentPage = Integer.parseInt(
+                    title.substring(title.lastIndexOf("Page") + "Page".length()).trim());
+        } catch (NumberFormatException e) {
+            currentPage = 1;
+        }
 
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
+        Queue<Track> queue = playerManagerService.getMusicManager(event.getGuild()).getScheduler().queue;
 
         int pageSize = 20;
         int totalTracks = queue.size();
         int totalPages = (int) Math.ceil((double) totalTracks / pageSize);
 
         int page = currentPage;
-        if (next) page++;
-        else page--;
+        if (next)
+            page++;
+        else
+            page--;
 
         updateEmbed(event, totalPages, page);
     }
@@ -54,8 +65,8 @@ public class QueueButton implements IButtonInteraction {
     private void updateEmbed(ButtonInteractionEvent event, int totalPages, int page) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
-        var trackList = queue.stream().toList();
+        Queue<Track> queue = playerManagerService.getMusicManager(event.getGuild()).getScheduler().queue;
+        var trackList = List.copyOf(queue);
 
         if (queue.isEmpty()) {
             embedBuilder.setDescription("The queue is currently empty").setColor(Color.RED);
@@ -72,10 +83,12 @@ public class QueueButton implements IButtonInteraction {
 
         embedBuilder = utils.queueBuilder(embedBuilder, page, queue, trackList);
 
-        event.editMessageEmbeds(embedBuilder.build()).setActionRow(
-                Button.secondary("prev", "Previous Page")
-                        .withDisabled(page == 1),
-                Button.secondary("next", "Next Page")
-                        .withDisabled(page == totalPages)).queue();
+        event.editMessageEmbeds(embedBuilder.build()).setComponents(
+                ActionRow.of(
+                        Button.secondary("prev", "Previous Page")
+                                .withDisabled(page == 1),
+                        Button.secondary("next", "Next Page")
+                                .withDisabled(page == totalPages)))
+                .queue();
     }
 }

@@ -1,87 +1,68 @@
 package com.discord.bot.commands.musiccommands;
 
-import com.discord.bot.audioplayer.GuildMusicManager;
 import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.dto.MultipleMusicDto;
 import com.discord.bot.dto.MusicDto;
 import com.discord.bot.service.MusicCommandUtils;
+import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.SearchSourceManager;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import lombok.AllArgsConstructor;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
 import net.dv8tion.jda.api.entities.channel.unions.AudioChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 public class PlayCommand implements ISlashCommand {
     RestService restService;
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
+    ReplyService replyService;
+    SearchSourceManager searchSourceManager;
+
+    private static final Set<String> SUPPORTED_DOMAINS = Set.of(
+            "youtube.com", "youtu.be", "soundcloud.com",
+            "twitch.tv", "bandcamp.com", "vimeo.com",
+            "mixcloud.com", "music.youtube.com");
 
     @Override
     public void execute(SlashCommandInteractionEvent event) {
-        var queryOption = event.getOption("query");
-        var ephemeralOption = event.getOption("ephemeral");
-        boolean ephemeral = ephemeralOption == null || ephemeralOption.getAsBoolean();
+        boolean ephemeral = utils.isEphemeralOptionEnabled(event);
         event.deferReply(ephemeral).queue();
 
-        assert queryOption != null;
-        String query = queryOption.getAsString().trim();
-        MultipleMusicDto multipleMusicDto = getSongUrl(query);
-        if (multipleMusicDto.getCount() == 0) {
-            event.getHook().sendMessageEmbeds(new EmbedBuilder()
-                            .setDescription("Youtube quota has exceeded. " +
-                                    "Please use youtube urls to play music for today.")
-                            .setColor(Color.RED)
-                            .build())
-                    .setEphemeral(ephemeral)
-                    .queue();
+        var queryOption = event.getOption("query");
+        var fileOption = event.getOption("file");
+
+        if (isInvalidInputCombination(queryOption, fileOption, event, ephemeral))
             return;
-        }
+
+        MultipleMusicDto multipleMusicDto = processInput(queryOption, fileOption);
         playMusic(event, multipleMusicDto, ephemeral);
     }
 
     private void playMusic(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto, boolean ephemeral) {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
         AudioChannel userChannel = getAudioChannel(event, false);
+        if (userChannel == null) {
+            replyService.deferReply(event, "Please join a voice channel to play music.", Color.RED, ephemeral);
+            return;
+        }
+
         AudioChannel botChannel = getAudioChannel(event, true);
+        if (!canPlayInChannel(userChannel, botChannel, event, ephemeral))
+            return;
 
-        if (userChannel != null) {
-            int trackSize = multipleMusicDto.getMusicDtoList().size();
-            if (trackSize != 0) {
-                if (botChannel == null) {
-                    GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-                    utils.playerCleaner(musicManager);
-
-                    if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
-                        event.getHook().sendMessageEmbeds(new EmbedBuilder()
-                                        .setDescription("Bot does not have permission to join the voice channel.")
-                                        .setColor(Color.RED)
-                                        .build())
-                                .setEphemeral(ephemeral)
-                                .queue();
-                        return;
-                    }
-                    userChannel.getGuild().getAudioManager().openAudioConnection(userChannel);
-                    botChannel = userChannel;
-                }
-                if (botChannel.equals(userChannel)) {
-                    if (trackSize == 1) playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList()
-                            .get(0), ephemeral);
-                    else playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
-                } else
-                    embedBuilder.setDescription("Please be in the same voice channel as the bot.").setColor(Color.RED);
-            } else embedBuilder.setDescription("No tracks found.").setColor(Color.RED);
-        } else embedBuilder.setDescription("Please join a voice channel.").setColor(Color.RED);
-
-        if (!embedBuilder.isEmpty())
-            event.getHook().sendMessageEmbeds(embedBuilder.build()).setEphemeral(ephemeral).queue();
+        loadAndPlayTracks(event, multipleMusicDto, userChannel, botChannel, ephemeral);
     }
 
     private AudioChannel getAudioChannel(SlashCommandInteractionEvent event, boolean self) {
@@ -101,32 +82,129 @@ public class PlayCommand implements ISlashCommand {
         return audioChannel;
     }
 
-    private MultipleMusicDto getSongUrl(String query) {
-        List<MusicDto> musicDtos = new ArrayList<>();
-        if (query.contains("https://www.youtube.com/shorts/")) query = youtubeShortsToVideo(query);
-        if (isSupportedUrl(query)) {
-            musicDtos.add(new MusicDto(null, query));
-            return new MultipleMusicDto(1, musicDtos, 0);
-        } else if (query.contains("https://open.spotify.com/")) {
-            musicDtos = restService.getTracksFromSpotify(query);
-            return restService.getYoutubeUrl(musicDtos);
+    private boolean canPlayInChannel(AudioChannel userChannel, AudioChannel botChannel,
+            SlashCommandInteractionEvent event, boolean ephemeral) {
+        if (botChannel == null) {
+            if (!userChannel.getGuild().getSelfMember().hasPermission(userChannel, Permission.VOICE_CONNECT)) {
+                replyService.deferReply(event, "Please check the bot's permissions in the voice channel.", Color.RED,
+                        ephemeral);
+                return false;
+            }
+            // Use DirectAudioController for Lavalink voice connections
+            event.getJDA().getDirectAudioController().connect(userChannel);
+        } else if (!botChannel.equals(userChannel)) {
+            replyService.deferReply(event, "Please be in the same voice channel as the bot.", Color.RED, ephemeral);
+            return false;
+        }
+        return true;
+    }
+
+    private void loadAndPlayTracks(SlashCommandInteractionEvent event, MultipleMusicDto multipleMusicDto,
+            AudioChannel userChannel, AudioChannel botChannel, boolean ephemeral) {
+        if (multipleMusicDto.hasError()) {
+            replyService.deferReply(event, multipleMusicDto.getErrorMessage(), Color.RED, ephemeral);
+            Guild guild = event.getGuild();
+            utils.leaveIfEmpty(guild, playerManagerService.getMusicManager(guild));
+            return;
+        }
+
+        if (multipleMusicDto.getMusicDtoList() == null || multipleMusicDto.getMusicDtoList().isEmpty()) {
+            replyService.deferReply(event, "No valid tracks found to play.", Color.RED, ephemeral);
+            return;
+        }
+
+        int trackCount = multipleMusicDto.getMusicDtoList().size();
+        if (trackCount == 1) {
+            MusicDto musicDto = multipleMusicDto.getMusicDtoList().get(0);
+            if (musicDto.getYoutubeUri() != null && musicDto.getYoutubeUri().startsWith("scsearch:")) {
+                playerManagerService.searchAndShowResults(event, musicDto, ephemeral);
+            } else {
+                playerManagerService.loadAndPlay(event, musicDto, ephemeral);
+            }
+        } else if (trackCount > 1) {
+            playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
         } else {
-            return restService.getYoutubeUrl(new MusicDto(query, null));
+            replyService.deferReply(event, "No tracks found.", Color.RED, ephemeral);
         }
     }
 
-    private boolean isSupportedUrl(String url) {
-        return (url.contains("https://www.youtube.com/watch?v=")
-                || url.contains("https://youtu.be/")
-                || url.contains("https://youtube.com/playlist?list=")
-                || url.contains("https://music.youtube.com/watch?v=")
-                || url.contains("https://music.youtube.com/playlist?list=")
-                || url.contains("https://www.twitch.tv/")
-                || url.contains("https://soundcloud.com/")
-        );
+    private boolean isInvalidInputCombination(OptionMapping queryOption, OptionMapping fileOption,
+            SlashCommandInteractionEvent event, boolean ephemeral) {
+
+        if (queryOption != null && fileOption != null) {
+            replyService.deferReply(event, "Please provide either a query or upload a file, not both.", Color.RED,
+                    ephemeral);
+            return true;
+        }
+
+        if (queryOption == null && fileOption == null) {
+            replyService.deferReply(event, "You must provide either a query or upload a file.", Color.RED, ephemeral);
+            return true;
+        }
+
+        return false;
     }
 
-    private String youtubeShortsToVideo(String url) {
-        return url.replace("shorts/", "watch?v=");
+    private MultipleMusicDto processInput(OptionMapping queryOption,
+            OptionMapping fileOption) {
+        if (queryOption != null) {
+            return getSongUrl(queryOption.getAsString().trim());
+        } else if (fileOption != null) {
+            var file = utils.getAttachedFile(fileOption);
+            if (file == null) {
+                return MultipleMusicDto.error("Invalid file upload. Please try again.");
+            }
+            return processUploadedFile(file);
+        }
+        return new MultipleMusicDto();
+    }
+
+    private MultipleMusicDto getSongUrl(String query) {
+        if (isSupportedUrl(query)) {
+            return MultipleMusicDto.of(List.of(new MusicDto(null, query)));
+        } else if (query.contains("https://open.spotify.com/")) {
+            return restService.getTracksFromSpotify(query);
+        } else if (isUrl(query)) {
+            return MultipleMusicDto.error("Please provide a valid YouTube search query or a supported URL.");
+        } else {
+            if (searchSourceManager.isYoutubeSearchEnabled()) {
+                return MultipleMusicDto.of(List.of(new MusicDto(query, "ytsearch:" + query)));
+            } else {
+                return MultipleMusicDto.of(List.of(new MusicDto(query, "scsearch:" + query)));
+            }
+        }
+    }
+
+    private MultipleMusicDto processUploadedFile(Attachment file) {
+        var musicDto = new MusicDto(file.getFileName(), file.getUrl());
+        return MultipleMusicDto.of(List.of(musicDto));
+    }
+
+    private boolean isSupportedUrl(String url) {
+        try {
+            URI uri = new URI(url);
+            String host = uri.getHost();
+            if (host == null)
+                return false;
+
+            for (String domain : SUPPORTED_DOMAINS) {
+                if (host.contains(domain)) {
+                    return true;
+                }
+            }
+        } catch (URISyntaxException ignored) {
+            return false;
+        }
+
+        return false;
+    }
+
+    private boolean isUrl(String input) {
+        try {
+            new URI(input);
+            return input.startsWith("http://") || input.startsWith("https://");
+        } catch (URISyntaxException ignored) {
+            return false;
+        }
     }
 }

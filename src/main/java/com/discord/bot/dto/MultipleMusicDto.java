@@ -12,7 +12,28 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class MultipleMusicDto {
-    private int count;
     private List<MusicDto> musicDtoList;
-    private int failCount;
+    private String errorMessage;
+
+    public MultipleMusicDto(List<MusicDto> musicDtoList) {
+        this.musicDtoList = musicDtoList;
+        this.errorMessage = null;
+    }
+
+    public MultipleMusicDto(String errorMessage) {
+        this.musicDtoList = List.of();
+        this.errorMessage = errorMessage;
+    }
+
+    public boolean hasError() {
+        return errorMessage != null;
+    }
+
+    public static MultipleMusicDto error(String message) {
+        return new MultipleMusicDto(message);
+    }
+
+    public static MultipleMusicDto of(List<MusicDto> dtos) {
+        return new MultipleMusicDto(dtos);
+    }
 }
