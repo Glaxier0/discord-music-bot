@@ -1,20 +1,34 @@
 # discord-music-bot
 
-Discord music bot using JDA, Lavaplayer, Spotify API, YoutubeAPI and PostgreSQL database.
+A Discord music bot built using **JDA**, **Lavalink**, **Lavalink Client**, and the **Spotify API**.
 
-Discord API - [JDA Wrapper](https://github.com/DV8FromTheWorld/JDA)
+[Discord JDA](https://github.com/discord-jda/JDA)
 
-Discord API BOT TOKEN from [here](https://discord.com/developers/applications)
+[Lavalink](https://github.com/lavalink-devs/Lavalink)
 
-From [Google Console](https://console.cloud.google.com/apis/dashboard) create a project, enable [YouTube API](https://developers.google.com/youtube/v3) and create api key from [Google Console](https://console.cloud.google.com/apis/dashboard).
+[Lavalink Client](https://github.com/lavalink-devs/lavalink-client)
 
-Create a [Spotify App](https://developer.spotify.com/dashboard/applications), get client id and client secret from there.
+Create a Discord bot and obtain a token from the
+[Discord Developer Portal](https://discord.com/developers/applications).
 
-Edit [application.yaml](https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.yaml) file.
+Create a [Spotify App](https://developer.spotify.com/dashboard/applications) and obtain the **Client ID** and **Client Secret**.
 
-Use docker command below before running bot, it will create local PostgreSQL database for you.
+Edit the bot configuration file:
+
+https://github.com/Glaxier0/discord-music-bot/blob/Main/src/main/resources/application.yml
+
+Edit the Lavalink configuration file:
+
+https://github.com/Glaxier0/discord-music-bot/blob/Main/lavalink-config/application.yml
+
+Before running the bot, start the Lavalink server using Docker:
+
 ```
 docker compose up
 ```
 
-For bot usage type /mhelp.
+To see the available commands, type:
+
+```
+/mhelp
+```
