@@ -1,97 +1,117 @@
 package com.discord.bot.audioplayer;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.GuildVoiceState;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.channel.middleman.AudioChannel;
-
+import dev.arbjerg.lavalink.client.player.Track;
+import dev.arbjerg.lavalink.protocol.v4.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Queue;
 
-public class TrackScheduler extends AudioEventAdapter {
+public class TrackScheduler {
     private final static Logger logger = LoggerFactory.getLogger(TrackScheduler.class);
-    public final AudioPlayer player;
-    public final BlockingQueue<AudioTrack> queue;
+    private final GuildMusicManager guildMusicManager;
+    public final Queue<Track> queue = new LinkedList<>();
     public boolean repeating = false;
-    private final Guild guild;
-    private int COUNT = 0;
 
-    public TrackScheduler(AudioPlayer player, Guild guild) {
-        this.player = player;
-        this.queue = new LinkedBlockingQueue<>();
-        this.guild = guild;
+    public TrackScheduler(GuildMusicManager guildMusicManager) {
+        this.guildMusicManager = guildMusicManager;
     }
 
-    public void queue(AudioTrack track) {
-        if (!this.player.startTrack(track, true)) {
-            boolean offerSuccess = this.queue.offer(track);
-
-            if (!offerSuccess) {
-                logger.error("Queue is full, could not add track: " + track.getInfo().title);
-            }
-        }
+    public void queue(Track track) {
+        logger.debug("Queueing track: {}", track.getInfo().getTitle());
+        this.guildMusicManager.getPlayer().ifPresentOrElse(
+                (player) -> {
+                    if (player.getTrack() == null) {
+                        logger.debug("No track currently playing, starting immediately.");
+                        this.startTrack(track);
+                    } else {
+                        logger.debug("Track already playing, adding to queue. Queue size: {}", queue.size() + 1);
+                        this.queue.offer(track);
+                    }
+                },
+                () -> {
+                    logger.debug("No cached player found, starting track directly.");
+                    this.startTrack(track);
+                }
+        );
     }
 
-    public void queueAll(List<AudioTrack> tracks) {
-        for (AudioTrack track : tracks) {
-            if (!this.player.startTrack(track, true)) {
-                boolean offerSuccess = this.queue.offer(track);
+    public void queueAll(List<Track> tracks) {
+        if (tracks.isEmpty()) return;
 
-                if (!offerSuccess)
-                    logger.error("Queue is full, could not add track and tracks after: " + track.getInfo().title);
-            }
-        }
+        this.guildMusicManager.getPlayer().ifPresentOrElse(
+                (player) -> {
+                    if (player.getTrack() == null) {
+                        this.startTrack(tracks.get(0));
+                        for (int i = 1; i < tracks.size(); i++) {
+                            this.queue.offer(tracks.get(i));
+                        }
+                    } else {
+                        this.queue.addAll(tracks);
+                    }
+                },
+                () -> {
+                    this.startTrack(tracks.get(0));
+                    for (int i = 1; i < tracks.size(); i++) {
+                        this.queue.offer(tracks.get(i));
+                    }
+                }
+        );
     }
 
     public void nextTrack() {
-        this.player.startTrack(this.queue.poll(), false);
-        if (player.getPlayingTrack() == null) {
-            guild.getAudioManager().closeAudioConnection();
-        }
-        if (repeating) {
-            repeating = false;
+        Track nextTrack = this.queue.poll();
+        if (nextTrack != null) {
+            logger.debug("Playing next track: {}", nextTrack.getInfo().getTitle());
+            this.startTrack(nextTrack);
+        } else {
+            logger.debug("Queue empty, stopping player.");
+            // No more tracks, stop the player
+            var link = this.guildMusicManager.getOrCreateLink();
+            link.createOrUpdatePlayer()
+                    .setTrack(null)
+                    .subscribe(
+                            (player) -> logger.debug("Player stopped successfully."),
+                            (error) -> logger.error("Failed to stop player", error)
+                    );
         }
     }
 
-    @Override
-    public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        if (COUNT >= 1) {
-            COUNT = 0;
-            logger.error("Error occurred", exception);
-            return;
-        }
-        player.startTrack(track.makeClone(), false);
-        COUNT++;
+    public void onTrackStart(Track track) {
+        logger.debug("Track started: {}", track.getInfo().getTitle());
     }
 
-    @Override
-    public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        Member self = guild.getSelfMember();
-        GuildVoiceState voiceState = self.getVoiceState();
-
-        if (voiceState != null) {
-            AudioChannel channel = voiceState.getChannel();
-            if (channel != null && channel.getMembers().size() == 1) {
-                guild.getAudioManager().closeAudioConnection();
-                return;
-            }
-        }
-
-        if (endReason.mayStartNext) {
+    public void onTrackEnd(Track lastTrack, Message.EmittedEvent.TrackEndEvent.AudioTrackEndReason endReason) {
+        if (endReason.getMayStartNext()) {
             if (this.repeating) {
-                this.player.startTrack(track.makeClone(), false);
+                this.startTrack(lastTrack.makeClone());
                 return;
             }
             nextTrack();
         }
+    }
+
+    public void onTrackException(Track track, String message) {
+        logger.error("Track exception for {}: {}", track.getInfo().getTitle(), message);
+        nextTrack();
+    }
+
+    public void onTrackStuck(Track track, long thresholdMs) {
+        logger.error("Track stuck for {}: threshold {}ms", track.getInfo().getTitle(), thresholdMs);
+        nextTrack();
+    }
+
+    private void startTrack(Track track) {
+        logger.info("Attempting to start track: {}", track.getInfo().getTitle());
+        var link = this.guildMusicManager.getOrCreateLink();
+        link.createOrUpdatePlayer()
+                .setTrack(track)
+                .setVolume(100)
+                .subscribe(
+                        (player) -> logger.info("Track started successfully: {}", track.getInfo().getTitle()),
+                        (error) -> logger.error("Failed to start track: {}", track.getInfo().getTitle(), error)
+                );
     }
 }

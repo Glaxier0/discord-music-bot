@@ -5,7 +5,7 @@ import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.arbjerg.lavalink.client.player.Track;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -26,7 +26,7 @@ public class SwapCommand implements ISlashCommand {
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-            List<AudioTrack> trackList = new ArrayList<>(musicManager.scheduler.queue);
+            List<Track> trackList = new ArrayList<>(musicManager.getScheduler().queue);
             var firstOption = event.getOption("songnum1");
             var secondOption = event.getOption("songnum2");
 
@@ -35,18 +35,18 @@ public class SwapCommand implements ISlashCommand {
             } else {
                 int first = firstOption.getAsInt() - 1;
                 int second = secondOption.getAsInt() - 1;
-                int size = musicManager.scheduler.queue.size();
+                int size = musicManager.getScheduler().queue.size();
 
                 if (first >= size || second >= size || first < 0 || second < 0) {
                     embedBuilder.setDescription("Please enter valid queue positions for both songs.")
                             .setColor(Color.RED);
                 } else if (trackList.size() > 1) {
-                    AudioTrack temp = trackList.get(first);
+                    Track temp = trackList.get(first);
                     trackList.set(first, trackList.get(second));
                     trackList.set(second, temp);
 
-                    musicManager.scheduler.queue.clear();
-                    musicManager.scheduler.queueAll(trackList);
+                    musicManager.getScheduler().queue.clear();
+                    musicManager.getScheduler().queueAll(trackList);
 
                     embedBuilder.setDescription("Successfully swapped the order of the two songs.")
                             .setColor(Color.GREEN);

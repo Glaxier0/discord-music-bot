@@ -7,13 +7,15 @@ plugins {
 group = 'com.discord'
 version = '1.0'
 //noinspection GrUnresolvedAccess
-project.archivesBaseName = 'music-bot'
-
+base {
+    archivesName = 'music-bot'
+}
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = '25'
 }
 
 repositories {
+    mavenCentral()
     maven {
         url 'https://m2.dv8tion.net/releases'
     }
@@ -21,21 +23,20 @@ repositories {
         url 'https://jitpack.io'
     }
     maven {
-        url'https://maven.lavalink.dev/releases'
+        url 'https://maven.lavalink.dev/releases'
     }
 
     mavenCentral()
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
-    implementation 'dev.arbjerg:lavaplayer:2.2.3'
-    implementation 'dev.lavalink.youtube:v2:1.13.2'
-    implementation 'net.dv8tion:JDA:5.5.1'
+    implementation 'dev.arbjerg:lavalink-client:3.4.0'
+    implementation 'net.dv8tion:JDA:6.3.1'
+    implementation("club.minnced:jdave-api:0.1.7")
+    implementation("club.minnced:jdave-native-win-x86-64:0.1.7")
 }
 
 test {

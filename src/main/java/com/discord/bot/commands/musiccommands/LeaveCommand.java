@@ -33,7 +33,7 @@ public class LeaveCommand implements ISlashCommand {
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(guild);
             utils.playerCleaner(musicManager);
-            guild.getAudioManager().closeAudioConnection();
+            event.getJDA().getDirectAudioController().disconnect(guild);
 
             embedBuilder.setDescription("Bye.").setColor(Color.GREEN);
         } else {

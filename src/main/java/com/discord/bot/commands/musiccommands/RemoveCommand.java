@@ -5,16 +5,15 @@ import com.discord.bot.commands.ISlashCommand;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.arbjerg.lavalink.client.player.Track;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
+import java.util.Queue;
 
 @AllArgsConstructor
 public class RemoveCommand implements ISlashCommand {
@@ -28,7 +27,7 @@ public class RemoveCommand implements ISlashCommand {
 
         if (utils.channelControl(event)) {
             GuildMusicManager musicManager = playerManagerService.getMusicManager(event.getGuild());
-            var queue = musicManager.scheduler.queue;
+            var queue = musicManager.getScheduler().queue;
 
             if (!queue.isEmpty()) {
                 var command = event.getSubcommandName();
@@ -46,38 +45,28 @@ public class RemoveCommand implements ISlashCommand {
         replyService.replyWithEmbed(event, embedBuilder, utils.isEphemeralOptionEnabled(event));
     }
 
-    private void handleSingleCommand(SlashCommandInteractionEvent event, BlockingQueue<AudioTrack> queue, EmbedBuilder embedBuilder) {
+    private void handleSingleCommand(SlashCommandInteractionEvent event, Queue<Track> queue, EmbedBuilder embedBuilder) {
         int index = Objects.requireNonNull(event.getOption("songnum")).getAsInt() - 1;
 
         if (index >= 0 && index < queue.size()) {
-            var iterator = queue.iterator();
-
-            for (int i = 0; i < index; i++) {
-                iterator.next();
-            }
-
-            var removedSong = iterator.next();
-            queue.remove(removedSong);
+            var trackList = new ArrayList<>(queue);
+            trackList.remove(index);
+            queue.clear();
+            queue.addAll(trackList);
 
             embedBuilder.setDescription("Song removed from the queue.").setColor(Color.GREEN);
         } else embedBuilder.setDescription("Invalid song index. Please provide a valid index.").setColor(Color.RED);
     }
 
-    private void handleBetweenCommand(SlashCommandInteractionEvent event, BlockingQueue<AudioTrack> queue, EmbedBuilder embedBuilder) {
+    private void handleBetweenCommand(SlashCommandInteractionEvent event, Queue<Track> queue, EmbedBuilder embedBuilder) {
         var firstIndex = Objects.requireNonNull(event.getOption("songnum1")).getAsInt() - 1;
         var lastIndex = Objects.requireNonNull(event.getOption("songnum2")).getAsInt() - 1;
 
         if (firstIndex >= 0 && lastIndex >= 0 && firstIndex <= lastIndex && lastIndex < queue.size()) {
-            var iterator = queue.iterator();
-            var songsToRemove = new ArrayList<>();
-
-            for (int i = 0; i <= lastIndex; i++) {
-                var song = iterator.next();
-                if (i >= firstIndex) {
-                    songsToRemove.add(song);
-                }
-            }
-            queue.removeAll(songsToRemove);
+            var trackList = new ArrayList<>(queue);
+            trackList.subList(firstIndex, lastIndex + 1).clear();
+            queue.clear();
+            queue.addAll(trackList);
 
             embedBuilder.setDescription("Removed songs from the queue.").setColor(Color.GREEN);
         } else embedBuilder
@@ -85,8 +74,8 @@ public class RemoveCommand implements ISlashCommand {
                 .setColor(Color.RED);
     }
 
-    private void handleAllCommand(BlockingQueue<AudioTrack> queue, EmbedBuilder embedBuilder) {
-        queue.removeAll(Arrays.asList(queue.toArray()));
+    private void handleAllCommand(Queue<Track> queue, EmbedBuilder embedBuilder) {
+        queue.clear();
         embedBuilder.setDescription("Removed songs from the queue.").setColor(Color.GREEN);
     }
 }

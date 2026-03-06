@@ -6,6 +6,7 @@ import com.discord.bot.dto.MusicDto;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.SearchSourceManager;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
@@ -28,6 +29,7 @@ public class PlayCommand implements ISlashCommand {
     PlayerManagerService playerManagerService;
     MusicCommandUtils utils;
     ReplyService replyService;
+    SearchSourceManager searchSourceManager;
 
     private static final Set<String> SUPPORTED_DOMAINS = Set.of(
             "youtube.com", "youtu.be", "soundcloud.com",
@@ -88,7 +90,8 @@ public class PlayCommand implements ISlashCommand {
                         ephemeral);
                 return false;
             }
-            userChannel.getGuild().getAudioManager().openAudioConnection(userChannel);
+            // Use DirectAudioController for Lavalink voice connections
+            event.getJDA().getDirectAudioController().connect(userChannel);
         } else if (!botChannel.equals(userChannel)) {
             replyService.deferReply(event, "Please be in the same voice channel as the bot.", Color.RED, ephemeral);
             return false;
@@ -112,7 +115,12 @@ public class PlayCommand implements ISlashCommand {
 
         int trackCount = multipleMusicDto.getMusicDtoList().size();
         if (trackCount == 1) {
-            playerManagerService.loadAndPlay(event, multipleMusicDto.getMusicDtoList().get(0), ephemeral);
+            MusicDto musicDto = multipleMusicDto.getMusicDtoList().get(0);
+            if (musicDto.getYoutubeUri() != null && musicDto.getYoutubeUri().startsWith("scsearch:")) {
+                playerManagerService.searchAndShowResults(event, musicDto, ephemeral);
+            } else {
+                playerManagerService.loadAndPlay(event, musicDto, ephemeral);
+            }
         } else if (trackCount > 1) {
             playerManagerService.loadMultipleAndPlay(event, multipleMusicDto, ephemeral);
         } else {
@@ -122,11 +130,18 @@ public class PlayCommand implements ISlashCommand {
 
     private boolean isInvalidInputCombination(OptionMapping queryOption, OptionMapping fileOption,
             SlashCommandInteractionEvent event, boolean ephemeral) {
+
         if (queryOption != null && fileOption != null) {
             replyService.deferReply(event, "Please provide either a query or upload a file, not both.", Color.RED,
                     ephemeral);
             return true;
         }
+
+        if (queryOption == null && fileOption == null) {
+            replyService.deferReply(event, "You must provide either a query or upload a file.", Color.RED, ephemeral);
+            return true;
+        }
+
         return false;
     }
 
@@ -152,7 +167,11 @@ public class PlayCommand implements ISlashCommand {
         } else if (isUrl(query)) {
             return MultipleMusicDto.error("Please provide a valid YouTube search query or a supported URL.");
         } else {
-            return MultipleMusicDto.of(List.of(new MusicDto(query, "ytsearch:" + query)));
+            if (searchSourceManager.isYoutubeSearchEnabled()) {
+                return MultipleMusicDto.of(List.of(new MusicDto(query, "ytsearch:" + query)));
+            } else {
+                return MultipleMusicDto.of(List.of(new MusicDto(query, "scsearch:" + query)));
+            }
         }
     }
 
@@ -174,7 +193,9 @@ public class PlayCommand implements ISlashCommand {
                 }
             }
         } catch (URISyntaxException ignored) {
+            return false;
         }
+
         return false;
     }
 

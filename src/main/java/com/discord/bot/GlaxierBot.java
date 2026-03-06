@@ -5,10 +5,16 @@ import com.discord.bot.commands.JdaCommands;
 import com.discord.bot.commands.AdminCommands;
 import com.discord.bot.service.*;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
+
+import club.minnced.discord.jdave.interop.JDaveSessionFactory;
+import dev.arbjerg.lavalink.libraries.jda.JDAVoiceUpdateListener;
 import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.audio.AudioModuleConfig;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +31,7 @@ public class GlaxierBot {
     final MusicCommandUtils musicCommandUtils;
     final SpotifyTokenService spotifyTokenService;
     final ReplyService replyService;
+    final SearchSourceManager searchSourceManager;
 
     @Value("${discord.bot.token}")
     private String discordToken;
@@ -37,20 +44,28 @@ public class GlaxierBot {
 
     public GlaxierBot(RestService restService, PlayerManagerService playerManagerService,
                     MusicCommandUtils musicCommandUtils, SpotifyTokenService spotifyTokenService,
-                    ReplyService replyService) {
+                    ReplyService replyService, SearchSourceManager searchSourceManager) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
         this.spotifyTokenService = spotifyTokenService;
         this.replyService = replyService;
+        this.searchSourceManager = searchSourceManager;
     }
 
     @PostConstruct
     public void startDiscordBot() throws InterruptedException {
         JDA jda = JDABuilder.createDefault(discordToken)
+                .setAudioModuleConfig(new AudioModuleConfig()
+                    .withDaveSessionFactory(new JDaveSessionFactory()))
+                .setVoiceDispatchInterceptor(new JDAVoiceUpdateListener(playerManagerService.getLavalinkClient()))
+                .enableIntents(GatewayIntent.GUILD_VOICE_STATES)
+                .enableCache(CacheFlag.VOICE_STATE)
                 .addEventListeners(
-                        new CommandManager(restService, playerManagerService, musicCommandUtils, replyService, adminUserId))
-                .setActivity(Activity.listening("Type /mhelp")).build();
+                        new CommandManager(restService, playerManagerService, musicCommandUtils, replyService,
+                                adminUserId, searchSourceManager))
+                .setActivity(Activity.listening("Type /mhelp"))
+                .build();
         jda.awaitReady();
         new JdaCommands().addJdaCommands(jda);
         new AdminCommands().addAdminCommands(jda, adminServerId);

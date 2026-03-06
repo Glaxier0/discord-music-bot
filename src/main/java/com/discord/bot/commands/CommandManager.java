@@ -2,10 +2,13 @@ package com.discord.bot.commands;
 
 import com.discord.bot.commands.admincommands.GuildsCommand;
 import com.discord.bot.commands.admincommands.LogsCommand;
+import com.discord.bot.commands.admincommands.SearchStatusCommand;
+import com.discord.bot.commands.admincommands.YoutubeSearchCommand;
 import com.discord.bot.commands.musiccommands.*;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.ReplyService;
 import com.discord.bot.service.RestService;
+import com.discord.bot.service.SearchSourceManager;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 
 import lombok.NonNull;
@@ -22,15 +25,18 @@ public class CommandManager extends ListenerAdapter {
     final MusicCommandUtils musicCommandUtils;
     final ReplyService replyService;
     private final String adminUserId;
+    private final SearchSourceManager searchSourceManager;
     private Map<String, ISlashCommand> commandsMap;
 
     public CommandManager(RestService restService, PlayerManagerService playerManagerService,
-            MusicCommandUtils musicCommandUtils, ReplyService replyService, String adminUserId) {
+            MusicCommandUtils musicCommandUtils, ReplyService replyService, String adminUserId,
+            SearchSourceManager searchSourceManager) {
         this.restService = restService;
         this.playerManagerService = playerManagerService;
         this.musicCommandUtils = musicCommandUtils;
         this.replyService = replyService;
         this.adminUserId = adminUserId;
+        this.searchSourceManager = searchSourceManager;
         commandMapper();
     }
 
@@ -46,8 +52,14 @@ public class CommandManager extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@SuppressWarnings("null") @NonNull ButtonInteractionEvent event) {
-        IButtonInteraction interaction = new QueueButton(playerManagerService, musicCommandUtils);
-        interaction.click(event);
+        String componentId = event.getComponentId();
+        if (componentId.startsWith("sc_")) {
+            IButtonInteraction interaction = new SoundCloudSelectButton(playerManagerService, musicCommandUtils, replyService);
+            interaction.click(event);
+        } else {
+            IButtonInteraction interaction = new QueueButton(playerManagerService, musicCommandUtils);
+            interaction.click(event);
+        }
     }
 
     private void commandMapper() {
@@ -55,8 +67,10 @@ public class CommandManager extends ListenerAdapter {
         //Admin Commands
         commandsMap.put("guilds", new GuildsCommand(adminUserId));
         commandsMap.put("logs", new LogsCommand(adminUserId));
+        commandsMap.put("youtubesearch", new YoutubeSearchCommand(adminUserId, searchSourceManager, replyService));
+        commandsMap.put("searchstatus", new SearchStatusCommand(adminUserId, searchSourceManager, replyService));
         //Music Commands
-        commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils, replyService));
+        commandsMap.put("play", new PlayCommand(restService, playerManagerService, musicCommandUtils, replyService, searchSourceManager));
         commandsMap.put("skip", new SkipCommand(playerManagerService, musicCommandUtils, replyService));
         commandsMap.put("forward", new ForwardCommand(playerManagerService, musicCommandUtils, replyService));
         commandsMap.put("rewind", new RewindCommand(playerManagerService, musicCommandUtils, replyService));

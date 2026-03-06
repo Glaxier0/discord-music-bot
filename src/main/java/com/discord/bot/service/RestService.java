@@ -29,14 +29,17 @@ public class RestService {
     private final static Logger logger = LoggerFactory.getLogger(RestService.class);
     public static String spotifyToken;
     private final RestTemplate restTemplate;
+    private final SearchSourceManager searchSourceManager;
 
-    public RestService() {
+    public RestService(SearchSourceManager searchSourceManager) {
         this.restTemplate = new RestTemplateBuilder().build();
+        this.searchSourceManager = searchSourceManager;
     }
 
     public MultipleMusicDto getTracksFromSpotify(String spotifyUrl) {
         List<MusicDto> musicDtos = new ArrayList<>();
         String id = extractSpotifyId(spotifyUrl);
+        String searchPrefix = searchSourceManager.isYoutubeSearchEnabled() ? "ytsearch:" : "scsearch:";
 
         if (id == null)
             return MultipleMusicDto.error("Invalid Spotify URL.");
@@ -63,7 +66,7 @@ public class RestService {
                     TrackDto track = item.getTrackDtoList();
                     if (track.getArtistDtoList() != null && !track.getArtistDtoList().isEmpty()) {
                         String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getName();
-                        musicDtos.add(new MusicDto(musicName, "ytsearch:" + musicName));
+                        musicDtos.add(new MusicDto(musicName, searchPrefix + musicName));
                     }
                 }
                 
@@ -75,7 +78,7 @@ public class RestService {
                     return MultipleMusicDto.error("Could not retrieve track information from Spotify.");
                 }
                 String musicName = track.getArtistDtoList().get(0).getName() + " - " + track.getSongName();
-                musicDtos.add(new MusicDto(musicName, "ytsearch:" + musicName));
+                musicDtos.add(new MusicDto(musicName, searchPrefix + musicName));
             } else {
                 return MultipleMusicDto.error("Unsupported Spotify URL. Please provide a direct link to a track or playlist.");
             }

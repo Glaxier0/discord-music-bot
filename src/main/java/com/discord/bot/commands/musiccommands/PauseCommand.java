@@ -21,7 +21,10 @@ public class PauseCommand implements ISlashCommand {
         EmbedBuilder embedBuilder = new EmbedBuilder();
 
         if (utils.channelControl(event)) {
-            playerManagerService.getMusicManager(event.getGuild()).audioPlayer.setPaused(true);
+            var musicManager = playerManagerService.getMusicManager(event.getGuild());
+            musicManager.getOrCreateLink().createOrUpdatePlayer()
+                    .setPaused(true)
+                    .subscribe();
             embedBuilder.setDescription("Song paused").setColor(Color.GREEN);
         } else embedBuilder.setDescription("Please be in a same voice channel as bot.").setColor(Color.RED);
 

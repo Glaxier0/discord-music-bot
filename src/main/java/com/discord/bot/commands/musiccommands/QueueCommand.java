@@ -3,14 +3,16 @@ package com.discord.bot.commands.musiccommands;
 import com.discord.bot.service.MusicCommandUtils;
 import com.discord.bot.service.audioplayer.PlayerManagerService;
 import com.discord.bot.commands.ISlashCommand;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import dev.arbjerg.lavalink.client.player.Track;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.awt.*;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
+import java.util.Queue;
 
 @AllArgsConstructor
 public class QueueCommand implements ISlashCommand {
@@ -21,8 +23,8 @@ public class QueueCommand implements ISlashCommand {
     public void execute(SlashCommandInteractionEvent event) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         boolean ephemeral = utils.isEphemeralOptionEnabled(event);
-        BlockingQueue<AudioTrack> queue = playerManagerService.getMusicManager(event.getGuild()).scheduler.queue;
-        var trackList = queue.stream().toList();
+        Queue<Track> queue = playerManagerService.getMusicManager(event.getGuild()).getScheduler().queue;
+        var trackList = List.copyOf(queue);
 
         if (queue.isEmpty()) {
             sendEmptyQueueResponse(event, embedBuilder, ephemeral);
@@ -40,11 +42,12 @@ public class QueueCommand implements ISlashCommand {
 
         embedBuilder = utils.queueBuilder(embedBuilder, page, queue, trackList);
 
-        event.replyEmbeds(embedBuilder.build()).addActionRow(
-                        Button.secondary("prev", "Previous Page")
-                                .withDisabled(page == 1),
-                        Button.secondary("next", "Next Page")
-                                .withDisabled(page == totalPages))
+        event.replyEmbeds(embedBuilder.build()).addComponents(
+                        ActionRow.of(
+                                Button.secondary("prev", "Previous Page")
+                                        .withDisabled(page == 1),
+                                Button.secondary("next", "Next Page")
+                                        .withDisabled(page == totalPages)))
                 .setEphemeral(ephemeral)
                 .queue();
     }
